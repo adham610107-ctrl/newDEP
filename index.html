@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRO EXAM V10 Ultimate - Premium Edition</title>
+    <title>PRO EXAM Ultimate - Premium Edition</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0A84FF">
@@ -26,23 +26,23 @@
                     <input type="password" id="auth-password" class="premium-input" placeholder="Maxfiy Parol" autocomplete="off">
                     <input type="text" id="auth-keygen" class="premium-input" placeholder="Keygen (Litsenziya kaliti)" autocomplete="off">
                     <button class="btn-start pulse" id="btn-auth" onclick="authenticateUser()">Kirishni Tasdiqlash 🔒</button>
-                    <p id="auth-error" class="text-error hidden"></p>
+                    <p id="auth-error" class="text-error hidden" style="font-size: 0.9rem; margin-top: 10px; font-weight: bold;"></p>
                 </div>
 
                 <div class="rules-box payment-box">
-                    <p class="rules-title">⚠️ Qat'iy Xavfsizlik Qoidalari</p>
-                    <p class="rules-text">• Berilgan Keygen <b>faqat 1 ta qurilma</b> uchun faol.<br>• Intellektual sinov vaqtida boshqa oynaga o'tish yoki nusxalash (Ctrl+C) taqiqlanadi. Qoida buzulsa sessiya avtomatik yopiladi!</p>
+                    <p style="text-align:center; font-weight:900; color:var(--error); margin-bottom:10px;">⚠️ Qat'iy Xavfsizlik Qoidalari</p>
+                    <p style="font-size:0.85rem; margin-bottom:10px; text-align: left;">• Berilgan Keygen <b>faqat 1 ta qurilma</b> uchun faol.<br>• Intellektual sinov vaqtida boshqa oynaga o'tish yoki nusxalash (Ctrl+C) taqiqlanadi. Qoida buzulsa sessiya avtomatik yopiladi!</p>
                     
-                    <hr class="dashed-hr">
+                    <hr style="border:0; border-top:1px dashed var(--primary); margin:15px 0; opacity: 0.3;">
                     
-                    <p class="payment-text"><b>🔑 Litsenziya kaliti (Keygen) olish:</b><br>To'lov summasi: <b>25 000 so'm</b>.<br>To'lovni amalga oshiring va kvitansiyani adminga yuboring.</p>
+                    <p style="font-size:0.85rem; margin-bottom:10px; text-align:center;"><b>🔑 Litsenziya kaliti (Keygen) olish:</b><br>To'lov summasi: <b>25 000 so'm</b>.<br>To'lovni amalga oshiring va kvitansiyani adminga yuboring.</p>
                     
                     <div class="card-copy" onclick="copyCard()" title="Nusxalash uchun ustiga bosing">
-                        Humo: <b id="card-num">9860350141282409</b> <span>📋</span>
+                        Humo: <b id="card-num">9860350141282409</b> <span style="font-size: 1.2rem;">📋</span>
                     </div>
                     
-                    <div class="tg-contact-box">
-                        <span>Kvitansiya yuborish ➡️</span>
+                    <div style="text-align:center; margin-top:20px; display:flex; align-items:center; justify-content:center; gap: 10px;">
+                        <span style="font-size:0.95rem; font-weight:700; color: var(--text);">Kvitansiya yuborish ➡️</span>
                         <a href="https://t.me/atamuratovs" target="_blank" class="tg-link" title="Adminga yozish">
                             <img src="tg.png" alt="Telegram" onerror="this.style.display='none'">
                         </a>
@@ -90,7 +90,16 @@
         <div class="nav-right">
             <button id="install-app-btn" class="install-btn hidden">📲 O'rnatish</button>
             
-            <button class="comfort-eye-btn" onclick="toggleComfortEye()" title="Comfort Eye rejimi">👁️</button>
+            <button class="comfort-eye-btn" id="comfortEyeToggle" onclick="toggleComfortEye()" title="Comfort Eye rejimi">
+                <svg id="eye-closed-icon" class="eye-svg active-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+                <svg id="eye-open-icon" class="eye-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </button>
 
             <div class="streak-box" title="Uzluksiz faollik kunlari">
                 🔥 <span id="streak-count">0</span>
@@ -108,16 +117,13 @@
     <div id="dashboard-screen" class="screen hidden">
         <div class="container main-content">
             <header class="dash-header slide-up">
-                <div class="welcome-header-group">
-                    <h2>Hurmatli <span id="display-name" class="text-primary">Talaba</span>!</h2>
-                    <button class="comfort-eye-btn inline-eye" onclick="toggleComfortEye()" title="Comfort Eye rejimi">👁️</button>
-                </div>
+                <h2>Hurmatli <span id="display-name" class="text-primary">Talaba</span>!</h2>
                 
                 <div class="stats-row">
                     <div class="stat-card">O'zlashtirilgan: <b id="learned-count" class="text-success">0</b> <span class="max-total" id="max-learned-total">/ 0</span></div>
                     <div class="stat-card">Xatolar: <b id="error-count" class="text-error">0</b></div>
                 </div>
-                <div class="progress-info">
+                <div class="progress-info mt-10" style="font-size: 0.85rem; color: var(--text-sec); text-align: center; margin-top: 15px;">
                     🎯 Sizning maqsadingiz barcha bilimlarni yashil zonaga olib chiqish va Oltin Sertifikatga ega bo'lish!
                 </div>
             </header>
@@ -134,21 +140,22 @@
                 <button class="cat-btn btn-exam pulse" onclick="startExamMode()">🎓 IMTIHON MODE (Boss Fight)</button>
             </div>
 
-            <div id="dashboard-rentgen" class="rentgen-container slide-up">
-                <h3 class="rentgen-title">📊 "Rentgen" Tahlili (Umumiy O'zlashtirish)</h3>
+            <div id="dashboard-rentgen" class="rentgen-container slide-up" style="margin-top: 30px; background: var(--card); border: 1px solid var(--glass-border); box-shadow: 0 5px 20px rgba(0,0,0,0.03); padding: 25px; border-radius: 25px;">
+                <h3 style="margin-bottom: 20px; color: var(--text); text-align: center; font-weight: 800;">📊 "Rentgen" Tahlili (Umumiy O'zlashtirish)</h3>
                 <div id="dash-rentgen-bars"></div>
                 
-                <div class="trading-section">
-                    <h4 class="trading-title">📈 O'zlashtirish Dinamikasi</h4>
-                    <div class="trading-chart">
-                        <div class="trading-midline"></div>
-                        <div id="trade-history" class="trading-history-bars"></div>
+                <div class="trading-section" style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed var(--glass-border);">
+                    <h4 style="margin-bottom: 15px; color: var(--text); text-align: center;">📈 O'zlashtirish Dinamikasi</h4>
+                    <div class="trading-chart" style="display:flex; align-items:center; height: 160px; position: relative; background: rgba(0,0,0,0.02); border-radius: 15px; padding: 10px; border: 1px solid var(--glass-border);">
+                        <div style="position: absolute; top:50%; left:0; right:0; height:2px; background:var(--text-sec); opacity: 0.3;"></div>
+                        <div id="trade-history" style="display:flex; width: 100%; height: 100%; align-items:center; justify-content: space-between; position:relative; z-index:1;">
+                            </div>
                     </div>
-                    <div class="trading-labels">
-                        <span class="text-success">▲ To'g'ri javoblar</span>
-                        <span class="text-error">▼ Xatolar</span>
+                    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.9rem; font-weight:bold; padding: 0 10px;">
+                        <span style="color:var(--success);">▲ To'g'ri javoblar</span>
+                        <span style="color:var(--error);">▼ Xatolar</span>
                     </div>
-                    <p class="trading-note">
+                    <p style="text-align:center; font-size: 0.9rem; color: var(--text-sec); margin-top: 15px; font-weight: 600; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 10px;">
                         💡 Eslatma: Xatolar ustida ishlansa ko'rsatgich ko'tariladi (Qizil grafik kamayib, yashil ortadi).
                     </p>
                 </div>
@@ -159,23 +166,23 @@
 
     <div id="modal-level" class="modal-overlay" onclick="closeModal(event, 'modal-level')">
         <div class="modal-content">
-            <h2 id="modal-subject-title" class="modal-main-title">Fan</h2>
+            <h2 id="modal-subject-title" style="margin-bottom: 15px; font-weight:800; text-align:center;">Fan</h2>
             <div class="level-grid" id="level-grid-box"></div>
-            <button class="btn-start btn-outline-primary" onclick="prepareTest('sub_mix', 'Fandan Aralash Test')">🎲 Fandan Aralash Test</button>
+            <button class="btn-start" style="margin-top:15px; background:var(--bg); border:2px solid var(--primary); color:var(--primary);" onclick="prepareTest('sub_mix', 'Fandan Aralash Test')">🎲 Fandan Aralash Test</button>
         </div>
     </div>
 
     <div id="modal-chapters" class="modal-overlay" onclick="closeModal(event, 'modal-chapters')">
         <div class="modal-content">
-            <h2 class="modal-main-title">Barcha Boblar</h2>
-            <p class="modal-sub-title">Dinamik axborot bazasi</p>
+            <h2 style="margin-bottom: 15px; font-weight:800; text-align:center;">Barcha Boblar</h2>
+            <p style="text-align:center; color:var(--text-sec); font-size:0.9rem; margin-bottom:15px;">Dinamik axborot bazasi</p>
             <div class="level-grid" id="chapters-grid-box"></div>
         </div>
     </div>
 
     <div id="setup-screen" class="modal-overlay" onclick="closeModal(event, 'setup-screen')">
         <div class="modal-content">
-            <h2 class="modal-main-title">⚙️ Parametrlarni Sozlash</h2>
+            <h2 style="text-align: center; margin-bottom: 25px; font-size: 1.5rem;">⚙️ Parametrlarni Sozlash</h2>
             <div class="setup-group">
                 <label>Qiyinlik darajasi (Vaqt):</label>
                 <div class="segmented-control difficulty-control">
@@ -191,7 +198,7 @@
                     <button class="seg-btn order-opt order-seq" onclick="setOrder('seq', this)">⬇️ Xronologik ketma-ketlik</button>
                 </div>
             </div>
-            <div class="setup-actions">
+            <div class="setup-actions" style="display:flex; gap:10px;">
                 <button class="btn-cancel" onclick="closeModalDirect('setup-screen')">Bekor qilish</button>
                 <button class="btn-start-test" onclick="applySetup()">Boshlash 🚀</button>
             </div>
@@ -200,37 +207,37 @@
 
     <div id="modal-result" class="modal-overlay">
         <div class="modal-content text-center">
-            <h2 class="modal-main-title">Chuqur Tahlil Natijasi</h2>
+            <h2 style="font-weight:900;">Chuqur Tahlil Natijasi</h2>
             <div class="donut" id="result-donut"><span id="result-percent">0%</span></div>
             <p class="res-msg" id="result-msg">Xabar</p>
             
-            <div class="rentgen-inner-container">
-                <h4 class="rentgen-inner-title">Fanlar bo'yicha Rentgen Tahlili</h4>
+            <div id="rentgen-container" class="rentgen-container" style="text-align: left; margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.03); border-radius: 15px;">
+                <h4 style="margin-bottom: 15px; color: var(--text); text-align: center;">Fanlar bo'yicha Rentgen Tahlili</h4>
                 <div id="rentgen-bars"></div>
             </div>
 
-            <button class="btn-start btn-gold" id="cert-btn" onclick="showCertificate()">Premium Sertifikatni Olish 🏆</button>
-            <button class="btn-start btn-outline-primary" onclick="goHome()">Asosiy menyuga qaytish</button>
+            <button class="btn-start" id="cert-btn" style="display:none; background: linear-gradient(135deg, #FFD700, #FFA500); color: black; margin-bottom: 10px; font-weight:800;" onclick="showCertificate()">Premium Sertifikatni Olish 🏆</button>
+            <button class="btn-start" style="background:var(--bg); border:2px solid var(--primary); color:var(--primary);" onclick="goHome()">Asosiy menyuga qaytish</button>
         </div>
     </div>
 
     <div id="modal-donate" class="modal-overlay">
-        <div class="modal-content text-center modal-donate-border">
-            <div class="donate-icon">☕</div>
-            <h2 class="modal-main-title">Muallifdan Samimiy Murojaat</h2>
-            <p class="donate-text">
+        <div class="modal-content text-center" style="border: 2px solid var(--warning);">
+            <div style="font-size: 3rem; margin-bottom: 10px;">☕</div>
+            <h2 style="font-weight:800; margin-bottom: 15px; color: var(--text);">Muallifdan Samimiy Murojaat</h2>
+            <p style="font-size: 0.95rem; color: var(--text-sec); line-height: 1.6; margin-bottom: 20px;">
                 Ushbu platforma talabalar yakuniy imtihonlarga qiynalmasdan tayyorlanishi uchun yuzlab soatlik uyqusiz tunlar va qora mehnat evaziga yaratildi. Agar platforma sizga foyda keltirgan bo'lsa va dasturchini qo'shimcha qo'llab-quvvatlashni xohlasangiz, bitta qahva puli bilan minnatdorchilik bildirishingiz mumkin!
             </p>
-            <div class="card-copy" onclick="copyCard()" title="Nusxalash uchun bosing">
-                Humo: <b id="card-num-donate">9860350141282409</b> <span>📋</span>
+            <div class="card-copy" onclick="copyCard()" title="Nusxalash uchun bosing" style="margin-bottom: 15px;">
+                Humo: <b id="card-num-donate">9860350141282409</b> <span style="font-size: 1.2rem;">📋</span>
             </div>
-            <a href="https://t.me/atamuratovs" target="_blank" class="donate-tg-link">Adminga yozish (Telegram) ↗️</a>
-            <button class="btn-start" onclick="closeModalDirect('modal-donate')">Rahmat!</button>
+            <a href="https://t.me/atamuratovs" target="_blank" style="display:block; margin-bottom: 15px; color: var(--primary); font-weight: bold; text-decoration: none;">Adminga yozish (Telegram) ↗️</a>
+            <button class="btn-cancel" style="width: 100%; background: var(--success); color: white; border: none; font-weight: bold;" onclick="closeModalDirect('modal-donate')">Rahmat!</button>
         </div>
     </div>
 
-    <div id="modal-cert" class="modal-overlay cert-z-index">
-        <div class="modal-content cert-wrapper">
+    <div id="modal-cert" class="modal-overlay" style="z-index: 3000;">
+        <div class="modal-content cert-wrapper" style="max-width: 850px; background: transparent; border: none; box-shadow: none; padding: 0;">
             
             <div id="printable-cert" class="css-cert-container">
                 <div class="css-cert-border">
@@ -266,9 +273,9 @@
                 </div>
             </div>
             
-            <div class="cert-modal-actions no-print">
-                <button class="btn-start btn-download" onclick="window.print()">Yuklab olish (PDF) 📥</button>
-                <button class="btn-cancel btn-exit" onclick="goHome()">Chiqish</button>
+            <div class="cert-modal-actions no-print" style="margin-top: 20px; display:flex; gap:10px; justify-content: center;">
+                <button class="btn-start" style="background: linear-gradient(135deg, #28A745, #30D158); max-width: 250px;" onclick="window.print()">Yuklab olish (PDF) 📥</button>
+                <button class="btn-cancel" style="max-width: 200px; background: rgba(0,0,0,0.5); color: #fff; border: none;" onclick="goHome()">Chiqish</button>
             </div>
         </div>
     </div>
@@ -277,7 +284,7 @@
         <div class="progress-bar-container"><div id="progress-fill"></div></div>
         
         <div id="combo-badge" class="combo-badge hidden">COMBO x3 🔥</div>
-        <div id="hacker-badge" class="hacker-badge hidden">HACKER DARAJASI 💻!</div>
+        <div id="hacker-badge" class="combo-badge hidden" style="background: linear-gradient(135deg, #00C9FF, #92FE9D); color: #000;">HACKER DARAJASI 💻!</div>
         <div id="boss-fight-warning" class="boss-warning hidden">⚠️ BOSS FIGHT (OXIRGI 5 TA) ⚠️</div>
 
         <button id="restart-mini-btn" class="restart-mini-btn hidden" onclick="confirmRestart()" title="Boshidan boshlash">🔄</button>
