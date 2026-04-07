@@ -88,12 +88,17 @@
             <span class="logo-text">PRO EXAM <span class="badge">v8.0</span></span>
         </div>
         <div class="nav-right">
+            <button id="install-app-btn" class="install-btn hidden">📲 O'rnatish</button>
             <div class="streak-box" title="Uzluksiz faollik kunlari">
                 🔥 <span id="streak-count">0</span>
             </div>
             <button id="exit-test-btn" class="exit-mini hidden" onclick="confirmExit()">🚪 Tark etish</button>
             <div id="exam-timer" class="timer-badge hidden">00:00</div>
-            <button onclick="toggleTheme()" class="theme-btn" title="Rejimni o'zgartirish">🌗</button>
+            
+            <label class="theme-switch" title="Kun/Tun rejimi">
+                <input type="checkbox" id="theme-slider" onchange="toggleTheme()">
+                <span class="slider round"></span>
+            </label>
         </div>
     </nav>
 
@@ -215,15 +220,17 @@
                 </div>
                 <div class="cert-footer">
                     <div class="cert-sign">
-                        <i>A. Atamuratov</i>
-                        <hr>
+                        <img src="Picsart_26-04-08_01-38-04-351.png" alt="A. Atamuratov Imzosi" class="cert-imzo-img">
+                        <hr class="cert-hr">
                         <span>Platforma Yaratuvchisi</span>
                     </div>
                     <div class="cert-seal">Premium</div>
                 </div>
             </div>
-            <button class="btn-start no-print" style="margin-top: 20px; background: var(--success);" onclick="window.print()">Yuklab olish (Print/PDF) 📥</button>
-            <button class="btn-cancel no-print" style="width: 100%;" onclick="closeModalDirect('modal-cert')">Yopish</button>
+            <div class="cert-modal-actions no-print" style="margin-top: 20px; display:flex; gap:10px;">
+                <button class="btn-start" style="background: var(--success);" onclick="window.print()">Yuklab olish 📥</button>
+                <button class="btn-cancel" onclick="goHome()">Chiqish</button>
+            </div>
         </div>
     </div>
 
@@ -233,6 +240,8 @@
         <div id="combo-badge" class="combo-badge hidden">COMBO x3 🔥</div>
         <div id="hacker-badge" class="combo-badge hidden" style="background: linear-gradient(135deg, #00C9FF, #92FE9D); color: #000;">HACKER DARAJASI 💻!</div>
         <div id="boss-fight-warning" class="boss-warning hidden">⚠️ BOSS FIGHT (OXIRGI 5 TA) ⚠️</div>
+
+        <button id="restart-mini-btn" class="restart-mini-btn hidden" onclick="confirmRestart()" title="Boshidan boshlash">🔄</button>
 
         <div class="container test-layout">
             <div class="map-container">
