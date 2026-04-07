@@ -201,7 +201,6 @@ function speakQuestion(idx) {
     }
 }
 
-// Easter Eggs Logic
 let comboCount = 0; 
 let hackerStreak = 0; 
 let lastAnswerTime = 0; 
@@ -234,13 +233,9 @@ function updateDailyStreak() {
     if (lastDate !== today) {
         let yesterday = new Date(); 
         yesterday.setDate(yesterday.getDate() - 1);
-        if (lastDate === yesterday.toDateString()) {
-            streak++; 
-        } else if (lastDate) {
-            streak = 1; 
-        } else {
-            streak = 1; 
-        }
+        if (lastDate === yesterday.toDateString()) { streak++; } 
+        else if (lastDate) { streak = 1; } 
+        else { streak = 1; }
         localStorage.setItem('adham_last_date', today); 
         localStorage.setItem('adham_streak', streak);
     }
@@ -263,10 +258,22 @@ function toggleComfortEye() {
     document.body.classList.toggle('comfort-eye');
     const isEyeActive = document.body.classList.contains('comfort-eye');
     
-    document.querySelectorAll('.comfort-eye-btn').forEach(btn => {
-        if(isEyeActive) btn.classList.add('eye-active');
-        else btn.classList.remove('eye-active');
-    });
+    // Toggle SVG Icons smoothly
+    const eyeBtn = document.getElementById('comfortEyeToggle');
+    if(eyeBtn) {
+        const closedIcon = document.getElementById('eye-closed-icon');
+        const openIcon = document.getElementById('eye-open-icon');
+        
+        if(isEyeActive) {
+            eyeBtn.classList.add('eye-active');
+            if(closedIcon) closedIcon.classList.remove('active-eye');
+            if(openIcon) openIcon.classList.add('active-eye');
+        } else {
+            eyeBtn.classList.remove('eye-active');
+            if(openIcon) openIcon.classList.remove('active-eye');
+            if(closedIcon) closedIcon.classList.add('active-eye');
+        }
+    }
     localStorage.setItem('comfort_eye', isEyeActive);
 }
 
@@ -333,15 +340,14 @@ window.onload = () => {
         setInterval(checkAdminBlock, 45000);
     }
     
-    // Load Saved Themes
+    // Theme & Comfort Eye Restore
     const slider = document.getElementById('theme-slider');
     if (localStorage.getItem('theme') === 'dark') { 
         document.body.classList.replace('light-mode', 'dark-mode'); 
         if(slider) slider.checked = true; 
     }
     if (localStorage.getItem('comfort_eye') === 'true') {
-        document.body.classList.add('comfort-eye');
-        document.querySelectorAll('.comfort-eye-btn').forEach(btn => btn.classList.add('eye-active'));
+        toggleComfortEye(); // Restore state
     }
 };
 
@@ -359,7 +365,6 @@ function handleLogin() {
     const name = document.getElementById('student-name').value.trim(); 
     if(name.length < 2) return alert("Ismingizni kiriting!");
     
-    // ADMIN CHECK
     isAdminAdham = (name.toLowerCase() === 'adham' || name.toLowerCase() === 'admin'); 
     if(isAdminAdham) alert("Assalomu alaykum, Muhtaram Creator (Admin)!");
     
@@ -379,16 +384,11 @@ function goHome() {
     document.body.classList.remove('boss-fight-mode'); 
     if('speechSynthesis' in window) window.speechSynthesis.cancel();
     
-    cheatWarnings = 0; 
-    comboCount = 0; 
-    hackerStreak = 0; 
-    totalErrorsInTest = 0;
-    
+    cheatWarnings = 0; comboCount = 0; hackerStreak = 0; totalErrorsInTest = 0;
     document.getElementById('restart-mini-btn').classList.add('hidden'); 
     switchScreen('test-screen', 'dashboard-screen'); 
     updateDashboardStats(); 
     
-    // COFFEE DONATE TRIGGER
     menuReturns++; 
     if(menuReturns % 3 === 0) { 
         setTimeout(() => { 
@@ -458,8 +458,7 @@ function drawTradingChart() {
     for(let i=0; i<numBars; i++) {
         let randG = 0, randR = 0;
         if (i === numBars - 1) { 
-            randG = greenH; 
-            randR = redH; 
+            randG = greenH; randR = redH; 
         } else {
             let progress = (i + 1) / numBars;
             let noise = Math.random() * 8 - 4; 
@@ -469,10 +468,10 @@ function drawTradingChart() {
         bars += `
         <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; padding: 0 1px;">
             <div style="height:50%; width:100%; display:flex; align-items:flex-end; justify-content:center; padding-bottom:1px;">
-                <div style="width:70%; max-width:12px; background:linear-gradient(to top, #28A745, #30D158); height:${randG}%; border-radius:2px 2px 0 0; box-shadow:0 0 5px rgba(48,209,88,0.4); transition: 1s;"></div>
+                <div style="width:70%; max-width:12px; background:linear-gradient(to top, #30D158, #28A745); height:${randG}%; border-radius:2px 2px 0 0; box-shadow:0 0 5px rgba(48,209,88,0.4); transition: 1s;"></div>
             </div>
             <div style="height:50%; width:100%; display:flex; align-items:flex-start; justify-content:center; padding-top:1px;">
-                <div style="width:70%; max-width:12px; background:linear-gradient(to bottom, #FF3B30, #FF453A); height:${randR}%; border-radius:0 0 2px 2px; box-shadow:0 0 5px rgba(255,69,58,0.4); transition: 1s;"></div>
+                <div style="width:70%; max-width:12px; background:linear-gradient(to bottom, #FF453A, #FF3B30); height:${randR}%; border-radius:0 0 2px 2px; box-shadow:0 0 5px rgba(255,69,58,0.4); transition: 1s;"></div>
             </div>
         </div>`;
     }
@@ -483,91 +482,57 @@ function drawTradingChart() {
 // 6. TEST PREPARATION & SETUP
 // ==========================================
 function openLevels(sub, title) {
-    forceCloseAllModals(); 
-    pendingSubject = sub; 
-    document.getElementById('modal-subject-title').innerText = title; 
-    const grid = document.getElementById('level-grid-box'); 
-    grid.innerHTML = '';
+    forceCloseAllModals(); pendingSubject = sub; document.getElementById('modal-subject-title').innerText = title; 
+    const grid = document.getElementById('level-grid-box'); grid.innerHTML = '';
     
     let subQs = bank.filter(q => q.subject === sub);
     for(let i=0; i<10; i++) {
-        let start = i * 20; let end = start + 20; 
-        if(start >= subQs.length) break; 
-        
-        let btn = document.createElement('button'); 
-        btn.className = 'lvl-btn';
+        let start = i * 20; let end = start + 20; if(start >= subQs.length) break; 
+        let btn = document.createElement('button'); btn.className = 'lvl-btn';
         let learned = subQs.slice(start, end).filter(q => stats.learned.includes(q.id)).length; 
         btn.innerHTML = `<b>${i+1}-Bosqich</b> <span style="font-size:0.8rem; color:${learned === 20 ? 'var(--success)' : 'var(--text-sec)'}">${learned}/${end-start} ✅</span>`;
-        btn.onclick = () => { 
-            pendingLevelQs = subQs.slice(start, end); 
-            testType = 'level'; 
-            testModeName = `${title} (${i+1}-Bosqich)`; 
-            openSetup(); 
-        }; 
+        btn.onclick = () => { pendingLevelQs = subQs.slice(start, end); testType = 'level'; testModeName = `${title} (${i+1}-Bosqich)`; openSetup(); }; 
         grid.appendChild(btn);
     }
     document.getElementById('modal-level').style.display = 'flex';
 }
 
 function openChapters() {
-    forceCloseAllModals(); 
-    const grid = document.getElementById('chapters-grid-box'); 
-    grid.innerHTML = ''; 
-    const cleanBank = [...bank].sort((a,b) => a.id - b.id); 
-    const chunks = Math.ceil(cleanBank.length / 20);
+    forceCloseAllModals(); const grid = document.getElementById('chapters-grid-box'); grid.innerHTML = ''; 
+    const cleanBank = [...bank].sort((a,b) => a.id - b.id); const chunks = Math.ceil(cleanBank.length / 20);
     
     for(let i=0; i<chunks; i++) {
-        let start = i * 20; let end = Math.min(start + 20, cleanBank.length); 
-        let chunkQs = cleanBank.slice(start, end);
+        let start = i * 20; let end = Math.min(start + 20, cleanBank.length); let chunkQs = cleanBank.slice(start, end);
         let learned = chunkQs.filter(q => stats.learned.includes(q.id)).length; 
-        let btn = document.createElement('button'); 
-        btn.className = 'lvl-btn';
+        let btn = document.createElement('button'); btn.className = 'lvl-btn';
         btn.innerHTML = `Bob: ${start+1}-${end} <span style="font-size:0.8rem; color:${learned === (end-start) ? 'var(--success)' : 'var(--warning)'}">${learned}/${end - start} ✅</span>`;
-        btn.onclick = () => { 
-            pendingLevelQs = chunkQs; 
-            testType = 'chapter'; 
-            testModeName = `Bob (${start+1}-${end})`; 
-            openSetup(); 
-        }; 
+        btn.onclick = () => { pendingLevelQs = chunkQs; testType = 'chapter'; testModeName = `Bob (${start+1}-${end})`; openSetup(); }; 
         grid.appendChild(btn);
     }
     document.getElementById('modal-chapters').style.display = 'flex';
 }
 
-function prepareTest(type, modeName) { 
-    forceCloseAllModals(); 
-    if (type === 'errors' && stats.errors.length === 0) return alert("Xatolar topilmadi!"); 
-    testType = type; testModeName = modeName; 
-    openSetup(); 
-}
-
+function prepareTest(type, modeName) { forceCloseAllModals(); if (type === 'errors' && stats.errors.length === 0) return alert("Xatolar topilmadi!"); testType = type; testModeName = modeName; openSetup(); }
 function openSetup() { forceCloseAllModals(); document.getElementById('setup-screen').style.display = 'flex'; }
 function setDifficulty(level, btn) { document.querySelectorAll('.difficulty-control .seg-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); diffTime = (level==='easy')?1200:(level==='medium')?900:600; }
 function setOrder(mode, btn) { document.querySelectorAll('.order-control .seg-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); orderMode = mode; }
 
 function applySetup() {
     forceCloseAllModals(); isExamMode = false; let pool = []; cheatWarnings = 0; comboCount = 0; hackerStreak = 0; totalErrorsInTest = 0; document.body.classList.remove('boss-fight-mode');
-    
-    let cleanBank = [...bank].sort((a,b) => a.id - b.id); 
-    document.getElementById('restart-mini-btn').classList.add('hidden'); 
+    let cleanBank = [...bank].sort((a,b) => a.id - b.id); document.getElementById('restart-mini-btn').classList.add('hidden'); 
     
     if(testType === 'level' || testType === 'chapter') pool = [...pendingLevelQs];
     else if(testType === 'mix_800') pool = [...cleanBank].sort(() => Math.random() - 0.5).slice(0, 20);
     else if(testType === 'errors') pool = cleanBank.filter(q => stats.errors.includes(q.id)).sort(() => Math.random()-0.5).slice(0, 20); 
     else if(testType === 'sub_mix') pool = cleanBank.filter(q => q.subject === pendingSubject).sort(() => Math.random()-0.5).slice(0, 20);
     
-    if(orderMode === 'random') pool = pool.sort(() => Math.random() - 0.5); 
-    else pool = pool.sort((a,b) => a.id - b.id); 
-    
+    if(orderMode === 'random') pool = pool.sort(() => Math.random() - 0.5); else pool = pool.sort((a,b) => a.id - b.id); 
     currentTest = pool; startTestSession();
 }
 
 function startExamMode() {
     forceCloseAllModals(); testType = 'exam'; testModeName = "IMTIHON MODE (Boss Fight)"; isExamMode = true; cheatWarnings = 0; comboCount = 0; hackerStreak = 0; totalErrorsInTest = 0; let examQs = [];
-    
-    const subjects = ['musiqa_nazariyasi', 'cholgu_ijrochiligi', 'vokal_ijrochiligi', 'metodika_repertuar']; 
-    document.getElementById('restart-mini-btn').classList.add('hidden'); 
-    
+    const subjects = ['musiqa_nazariyasi', 'cholgu_ijrochiligi', 'vokal_ijrochiligi', 'metodika_repertuar']; document.getElementById('restart-mini-btn').classList.add('hidden'); 
     subjects.forEach(sub => { let sQs = bank.filter(q => q.subject === sub).sort(() => Math.random() - 0.5).slice(0, 15); examQs = examQs.concat(sQs); });
     currentTest = examQs.sort(() => Math.random() - 0.5); diffTime = 3600; startTestSession();
 }
@@ -576,24 +541,15 @@ function startExamMode() {
 // 7. TEST SESSION ENGINE
 // ==========================================
 function startTestSession() {
-    switchScreen('dashboard-screen', 'test-screen'); 
-    document.getElementById('exit-test-btn').classList.remove('hidden'); 
-    document.getElementById('exam-timer').classList.remove('hidden');
-    
+    switchScreen('dashboard-screen', 'test-screen'); document.getElementById('exit-test-btn').classList.remove('hidden'); document.getElementById('exam-timer').classList.remove('hidden');
     currentIdx = 0; currentIndex = 0; userAnswers = new Array(currentTest.length).fill(null);
-    currentTest = currentTest.map(q => { 
-        let shuffledOpts = [...q.originalOpts].sort(() => Math.random() - 0.5); 
-        return { ...q, options: shuffledOpts, answer: shuffledOpts.indexOf(q.correctText) }; 
-    });
-    
+    currentTest = currentTest.map(q => { let shuffledOpts = [...q.originalOpts].sort(() => Math.random() - 0.5); return { ...q, options: shuffledOpts, answer: shuffledOpts.indexOf(q.correctText) }; });
     clearInterval(timerInterval); startTimer(diffTime); renderMap(); renderAllQuestions(); lastAnswerTime = Date.now();
 }
 
 function startTimer(seconds) {
-    let time = seconds; 
-    timerInterval = setInterval(() => {
-        time--; let m = Math.floor(time / 60), s = time % 60; 
-        document.getElementById('exam-timer').innerText = `${m}:${s < 10 ? '0'+s : s}`; 
+    let time = seconds; timerInterval = setInterval(() => {
+        time--; let m = Math.floor(time / 60), s = time % 60; document.getElementById('exam-timer').innerText = `${m}:${s < 10 ? '0'+s : s}`; 
         if (time <= 0) { clearInterval(timerInterval); showResult(userAnswers.filter(a => a?.isCorrect).length); }
     }, 1000);
 }
@@ -625,10 +581,7 @@ function runSpin(idx) {
 function updateFocus() {
     for(let i = 0; i < currentTest.length; i++) { 
         const block = document.getElementById(`q-block-${i}`); 
-        if(block) { 
-            if(i === currentIndex) { block.classList.remove('blurred-q'); block.classList.add('active-q'); runSpin(i); } 
-            else { block.classList.remove('active-q'); block.classList.add('blurred-q'); } 
-        } 
+        if(block) { if(i === currentIndex) { block.classList.remove('blurred-q'); block.classList.add('active-q'); runSpin(i); } else { block.classList.remove('active-q'); block.classList.add('blurred-q'); } } 
     }
     const bossWarn = document.getElementById('boss-fight-warning'); 
     if (isExamMode && currentIndex >= currentTest.length - 5) { document.body.classList.add('boss-fight-mode'); bossWarn.classList.remove('hidden'); } 
@@ -642,8 +595,7 @@ function scrollToActive() {
 }
 
 function updateMap() {
-    let answered = userAnswers.filter(a => a !== null).length; 
-    document.getElementById('progress-fill').style.width = `${(answered / currentTest.length) * 100}%`;
+    let answered = userAnswers.filter(a => a !== null).length; document.getElementById('progress-fill').style.width = `${(answered / currentTest.length) * 100}%`;
     currentTest.forEach((_, i) => { 
         const dot = document.getElementById(`dot-${i}`); 
         if(dot) { dot.className = 'dot'; if (i === currentIndex) dot.classList.add('active-dot'); if (userAnswers[i]) dot.classList.add(userAnswers[i].isCorrect ? 'correct' : 'wrong'); } 
@@ -657,13 +609,11 @@ function checkAns(qIdx, optIdx, event) {
     if (now - lastAnswerTime < 1500) { hackerStreak++; if (hackerStreak === 10) showHackerBadge(); } else { hackerStreak = 0; }
     lastAnswerTime = now;
     
-    const isCorrect = optIdx === currentTest[qIdx].answer; 
-    userAnswers[qIdx] = { selected: optIdx, isCorrect };
+    const isCorrect = optIdx === currentTest[qIdx].answer; userAnswers[qIdx] = { selected: optIdx, isCorrect };
     const qId = currentTest[qIdx].id; const clickedBtn = document.getElementById(`btn-${qIdx}-${optIdx}`);
     
     if (isCorrect) {
-        if (!stats.learned.includes(qId)) stats.learned.push(qId); 
-        stats.errors = stats.errors.filter(id => id !== qId);
+        if (!stats.learned.includes(qId)) stats.learned.push(qId); stats.errors = stats.errors.filter(id => id !== qId);
         clickedBtn.classList.add('magic-correct'); playFeedback('correct'); createParticles(event);
         comboCount++; if (comboCount >= 3) showComboBadge(); 
         document.body.classList.add('ambient-success'); setTimeout(() => document.body.classList.remove('ambient-success'), 600);
@@ -700,11 +650,10 @@ function finishExam() {
         userAnswers = new Array(currentTest.length).fill(null); currentIndex = 0; startTimer(diffTime); renderAllQuestions(); document.getElementById('finish-btn').classList.add('hidden');
     } else { showResult(correctCount); }
 }
-
 function shuffleArray(arr) { return arr.sort(() => Math.random() - 0.5); }
 
 // ==========================================
-// 8. RESULTS & CERTIFICATE GENERATION
+// 8. RESULTS & CSS-CERTIFICATE GENERATION
 // ==========================================
 function showResult(correctCount) {
     let percent = Math.round((correctCount / currentTest.length) * 100); 
@@ -739,7 +688,6 @@ function showResult(correctCount) {
 function showCertificate() {
     let today = new Date(); let dateString = `${today.getDate()}.${today.getMonth()+1}.${today.getFullYear()}`;
     
-    // Ism dinamik kiritiladi
     document.getElementById('cert-student-name').innerText = currentUser || "Noma'lum Talaba"; 
     document.getElementById('cert-mode-name').innerText = testModeName; 
     document.getElementById('cert-score').innerText = document.getElementById('result-percent').innerText; 
