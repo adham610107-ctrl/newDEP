@@ -7,7 +7,7 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0A84FF">
-    <link rel="apple-touch-icon" href="logo.jpg">
+    <link rel="apple-touch-icon" href="logo.png">
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -225,20 +225,11 @@
 
     <div id="modal-cert" class="modal-overlay" style="z-index: 3000;">
         <div class="modal-content cert-wrapper" style="max-width: 850px; background: transparent; border: none; box-shadow: none; padding: 0;">
-            
             <div id="printable-cert" class="cert-container">
-                <h1 class="cert-title">MUVAFFAQIYAT SERTIFIKATI</h1>
-                <p class="cert-subtitle">PRO EXAM Akademik Platformasi</p>
-                
-                <div class="cert-body-top">
-                    <p>Ushbu sertifikat</p>
-                </div>
+                <div class="cert-spacer"></div>
                 
                 <h2 class="cert-name" id="cert-student-name">TALABA ISMI</h2>
-                
-                <div class="cert-body-bottom">
-                    <p>ga intellektual sinovda yuqori darajadagi bilimini namoyon etgani uchun taqdim etiladi.</p>
-                </div>
+                <p class="cert-desc">ga intellektual sinovda yuqori darajadagi bilimini namoyon etgani uchun taqdim etiladi.</p>
                 
                 <div class="cert-stats">
                     <p><b>Rejim:</b> <span id="cert-mode-name">Mode</span></p>
@@ -247,13 +238,7 @@
                     <p><b>Sana:</b> <span id="cert-date">Date</span></p>
                 </div>
 
-                <div class="cert-sign">
-                    <img src="imzo.png" alt="A. Atamuratov Imzosi" class="cert-imzo-img">
-                    <hr class="cert-hr">
-                    <span>Platforma Yaratuvchisi</span>
-                </div>
-                
-                <div class="cert-seal">Premium</div>
+                <img src="imzo.png" alt="A. Atamuratov Imzosi" class="cert-imzo-img">
             </div>
             
             <div class="cert-modal-actions no-print" style="margin-top: 20px; display:flex; gap:10px; justify-content: center;">
