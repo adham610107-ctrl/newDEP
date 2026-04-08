@@ -1,188 +1,202 @@
 <!DOCTYPE html>
-<html lang=\"uz\">
+<html lang="uz">
 <head>
-    <meta charset=\"UTF-8\">
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\">
-    <title>PRO EXAM Ultimate - 2026 Edition</title>
-    <link rel=\"manifest\" href=\"manifest.json\">
-    <meta name=\"theme-color\" content=\"#0A84FF\">
-    <script src=\"https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js\"></script>
-    <link rel=\"stylesheet\" href=\"style.css\">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PRO EXAM Ultimate - Soft LMS Edition</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#5E5CE6">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class=\"light-mode\" id=\"main-body\" oncontextmenu=\"return false;\">
+<body class="light-mode" id="main-body" oncontextmenu="return false;">
 
-    <div id=\"auth-screen\" class=\"screen active\">
-        <div class=\"hero-overlay\">
-            <div class=\"hero-card glass-panel slide-up\">
-                <img src=\"logo.png\" alt=\"Logo\" class=\"main-logo\" onerror=\"this.src='logo.jpg'; this.onerror=null;\">
-                <div class=\"hero-badge\">Premium Tizim</div>
-                <h1 class=\"main-title\">Tizimga kirish</h1>
-                <div class=\"login-form\">
-                    <input type=\"text\" id=\"auth-login\" class=\"neo-input\" placeholder=\"Shaxsiy Login\" autocomplete=\"off\">
-                    <input type=\"password\" id=\"auth-password\" class=\"neo-input\" placeholder=\"Maxfiy Parol\" autocomplete=\"off\">
-                    <input type=\"text\" id=\"auth-keygen\" class=\"neo-input\" placeholder=\"Keygen (Litsenziya)\" autocomplete=\"off\">
-                    <button class=\"neo-btn btn-primary pulse\" id=\"btn-auth\" onclick=\"authenticateUser()\">Kirishni Tasdiqlash 🔒</button>
-                    <p id=\"auth-error\" class=\"text-error hidden\"></p>
+    <div id="auth-screen" class="screen active">
+        <div class="hero-overlay">
+            <div class="hero-card glass-panel slide-up">
+                <div class="logo-wrapper neo-circle">
+                    <img src="logo.jpg" alt="Logo" class="main-logo" onerror="this.src='logo.jpg'; this.onerror=null;">
                 </div>
-                <div class=\"rules-box neo-card\">
-                    <p class=\"text-error\" style=\"font-weight:900; text-align:center;\">⚠️ Qat'iy Xavfsizlik Qoidalari</p>
-                    <p style=\"font-size:0.85rem; margin-top:10px;\">• Keygen faqat 1 ta qurilma uchun.<br>• Ko'chirish (Ctrl+C) va boshqa oynaga o'tish taqiqlanadi!</p>
-                    <hr class=\"dashed-hr\">
-                    <p style=\"font-size:0.85rem; text-align:center;\"><b>🔑 Litsenziya kaliti (25 000 so'm)</b></p>
-                    <div class=\"card-copy neo-btn\" onclick=\"copyCard()\">Humo: <b id=\"card-num\">9860350141282409</b> 📋</div>
-                    <div style=\"text-align:center; margin-top:15px;\">
-                        <a href=\"https://t.me/atamuratovs\" target=\"_blank\" class=\"neo-btn-circle\"><img src=\"tg.png\" alt=\"TG\" onerror=\"this.style.display='none'\"></a>
+                <div class="hero-badge badge-warning">Soft UI / SaaS v11</div>
+                <h1 class="main-title">Tizimga kirish</h1>
+                <div class="login-form">
+                    <input type="text" id="auth-login" class="neo-input" placeholder="Shaxsiy Login" autocomplete="off">
+                    <input type="password" id="auth-password" class="neo-input" placeholder="Maxfiy Parol" autocomplete="off">
+                    <input type="text" id="auth-keygen" class="neo-input" placeholder="Keygen (Litsenziya)" autocomplete="off">
+                    <button class="neo-btn btn-primary pulse" id="btn-auth" onclick="authenticateUser()">Kirishni Tasdiqlash 🔒</button>
+                    <p id="auth-error" class="text-error hidden"></p>
+                </div>
+                <div class="rules-box neo-inset">
+                    <p class="rules-title text-error">⚠️ Qat'iy Xavfsizlik Qoidalari</p>
+                    <p class="rules-text">• Keygen faqat 1 ta qurilma uchun faol.<br>• Sessiya vaqtida boshqa oynaga o'tish yoki ko'chirish (Ctrl+C) taqiqlanadi!</p>
+                    <hr class="dashed-hr">
+                    <p class="payment-text">🔑 Litsenziya: <b>25 000 so'm</b>.</p>
+                    <div class="card-copy neo-btn" onclick="copyCard()">Humo: <b id="card-num">9860350141282409</b> 📋</div>
+                    <div style="text-align:center; margin-top:15px;">
+                        <a href="https://t.me/atamuratovs" target="_blank" class="neo-btn-icon"><img src="tg.png" alt="TG"></a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id=\"welcome-screen\" class=\"screen hidden\">
-        <div class=\"hero-overlay\">
-            <div class=\"hero-card glass-panel slide-up\">
-                <img src=\"logo.png\" alt=\"Logo\" class=\"main-logo\" onerror=\"this.src='logo.jpg'; this.onerror=null;\">
-                <div class=\"hero-badge\">Akademik Platforma</div>
-                <h1 class=\"main-title\">Xush kelibsiz!</h1>
-                <p class=\"hero-subtitle\">Tizim sizning zaif nuqtalaringizni chuqur tahlil qilib, mukammal natijaga yo'naltiradi.</p>
-                <div class=\"login-form\">
-                    <input type=\"text\" id=\"student-name\" class=\"neo-input\" placeholder=\"Ism familiyangiz...\" autocomplete=\"off\">
-                    <button class=\"neo-btn btn-primary pulse\" onclick=\"handleLogin()\">Sessiyani Boshlash 🚀</button>
+    <div id="welcome-screen" class="screen hidden">
+        <div class="hero-overlay">
+            <div class="hero-card glass-panel slide-up">
+                <div class="logo-wrapper neo-circle">
+                    <img src="logo.jpg" alt="Logo" class="main-logo">
+                </div>
+                <div class="hero-badge badge-primary">Akademik Platforma</div>
+                <h1 class="main-title">Xush kelibsiz!</h1>
+                <p class="hero-subtitle">Intellektual LMS platformasi sizning zaif nuqtalaringizni chuqur tahlil qilib, mukammal natijaga yo'naltiradi.</p>
+                <div class="login-form">
+                    <input type="text" id="student-name" class="neo-input" placeholder="Ism familiyangizni kiriting..." autocomplete="off">
+                    <button class="neo-btn btn-primary pulse" onclick="handleLogin()">Sessiyani Boshlash 🚀</button>
+                </div>
+                <div class="social-links mt-20">
+                    <a href="https://t.me/atamuratovs" target="_blank" class="neo-btn-icon"><img src="tg.png" alt="TG"></a>
+                    <a href="https://www.instagram.com/strovln" target="_blank" class="neo-btn-icon"><img src="insta.png" alt="IG"></a>
                 </div>
             </div>
         </div>
     </div>
 
-    <nav class=\"global-nav glass-panel hidden\" id=\"global-nav\">
-        <div class=\"logo-area\" onclick=\"logout()\">
-            <img src=\"logo.png\" alt=\"Logo\" class=\"nav-logo-mini\" onerror=\"this.src='logo.jpg'; this.onerror=null;\">
-            <span class=\"logo-text\">PRO EXAM <span class=\"badge\">v11</span></span>
+    <nav class="global-nav glass-panel hidden" id="global-nav">
+        <div class="logo-area" onclick="logout()">
+            <img src="logo.jpg" alt="Logo" class="nav-logo-mini">
+            <span class="logo-text">PRO EXAM <span class="badge">v11</span></span>
         </div>
-        <div class=\"nav-right\">
-            <button id=\"install-app-btn\" class=\"neo-btn-small btn-success hidden\">📲 O'rnatish</button>
-            <button class=\"comfort-eye-btn\" id=\"comfortEyeToggle\" onclick=\"toggleComfortEye()\" title=\"Ko'z himoyasi\">
-                <svg id=\"eye-closed-icon\" class=\"eye-svg active-eye\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24\"></path><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line></svg>
-                <svg id=\"eye-open-icon\" class=\"eye-svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle></svg>
+        <div class="nav-right">
+            <button id="install-app-btn" class="neo-btn-small btn-success hidden">📲 O'rnatish</button>
+            
+            <button class="comfort-eye-btn neo-btn-icon" id="comfortEyeToggle" onclick="toggleComfortEye()" title="Ko'z himoyasi">
+                <svg id="eye-closed-icon" class="eye-svg active-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                <svg id="eye-open-icon" class="eye-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             </button>
-            <div class=\"streak-box neo-inset\">🔥 <span id=\"streak-count\">0</span></div>
-            <label class=\"theme-switch\"><input type=\"checkbox\" id=\"theme-slider\" onchange=\"toggleTheme()\"><span class=\"slider round\"></span></label>
+
+            <div class="streak-box neo-inset">🔥 <span id="streak-count">0</span></div>
+            <label class="theme-switch"><input type="checkbox" id="theme-slider" onchange="toggleTheme()"><span class="slider round"></span></label>
         </div>
     </nav>
 
-    <div id=\"dashboard-screen\" class=\"screen hidden\">
-        <div class=\"container main-content\">
-            <header class=\"dash-header slide-up\">
-                <h2><span id=\"greeting-text\">Xayrli kun</span>, <span id=\"display-name\" class=\"text-primary\">Talaba</span>!</h2>
-                <div class=\"stats-row\">
-                    <div class=\"stat-card neo-card\">O'zlashtirildi: <b id=\"learned-count\" class=\"text-success\">0</b> <span class=\"max-total\">/ 785</span></div>
-                    <div class=\"stat-card neo-card\">Xatolar: <b id=\"error-count\" class=\"text-error\">0</b></div>
+    <div id="dashboard-screen" class="screen hidden">
+        <div class="container main-content">
+            <header class="dash-header slide-up">
+                <h2><span id="greeting-text">Assalomu alaykum</span>, <span id="display-name" class="text-primary">Talaba</span>!</h2>
+                <div class="stats-row">
+                    <div class="stat-card neo-card">O'zlashtirildi: <b id="learned-count" class="text-success">0</b> <span class="max-total">/ 785</span></div>
+                    <div class="stat-card neo-card">Xatolar: <b id="error-count" class="text-error">0</b></div>
                 </div>
             </header>
 
-            <div class=\"category-grid slide-up\">
-                <button class=\"neo-btn\" onclick=\"openLevels('musiqa_nazariyasi', 'Musiqa nazariyasi')\">🎼 Musiqa nazariyasi</button>
-                <button class=\"neo-btn\" onclick=\"openLevels('cholgu_ijrochiligi', 'Cholg\\'u ijrochiligi')\">🎻 Cholg'u ijrochiligi</button>
-                <button class=\"neo-btn\" onclick=\"openLevels('vokal_ijrochiligi', 'Vokal ijrochiligi')\">🎤 Vokal ijrochiligi</button>
-                <button class=\"neo-btn\" onclick=\"openLevels('metodika_repertuar', 'Metodika')\">📚 Metodika</button>
-                <button class=\"neo-btn btn-outline\" onclick=\"prepareTest('mix_800', 'Smart Mix')\">🎲 Smart Mix</button>
-                <button class=\"neo-btn btn-outline\" onclick=\"openChapters()\">📑 Boblar</button>
-                <button id=\"error-work-btn\" class=\"neo-btn btn-error\" onclick=\"prepareTest('errors', 'Xatolar Tahlili')\" disabled>🛠 Xatolar Ustida Ishlash</button>
-                <button class=\"neo-btn btn-boss pulse\" onclick=\"startExamMode()\">🎓 IMTIHON (Boss Fight)</button>
+            <div class="category-grid slide-up">
+                <button class="neo-btn" onclick="openLevels('musiqa_nazariyasi', 'Musiqa nazariyasi')">🎼 Musiqa nazariyasi</button>
+                <button class="neo-btn" onclick="openLevels('cholgu_ijrochiligi', 'Cholg\'u ijrochiligi')">🎻 Cholg'u ijrochiligi</button>
+                <button class="neo-btn" onclick="openLevels('vokal_ijrochiligi', 'Vokal ijrochiligi')">🎤 Vokal ijrochiligi</button>
+                <button class="neo-btn" onclick="openLevels('metodika_repertuar', 'Metodika')">📚 Metodika</button>
+                <button class="neo-btn btn-special" onclick="prepareTest('mix_800', 'Smart Mix')">🎲 Smart Mix</button>
+                <button class="neo-btn btn-outline" onclick="openChapters()">📑 Tasniflangan Boblar</button>
+                <button id="error-work-btn" class="neo-btn btn-error" onclick="prepareTest('errors', 'Xatolar Tahlili')" disabled>🛠 Xatolar Ustida Ishlash</button>
+                <button class="neo-btn btn-boss pulse" onclick="startExamMode()">🎓 IMTIHON (Boss Fight)</button>
             </div>
 
-            <div id=\"dashboard-rentgen\" class=\"neo-card slide-up\" style=\"margin-top: 30px; padding:25px;\">
-                <h3 style=\"text-align:center; margin-bottom:20px;\">📊 Chuqur \"Rentgen\" Tahlili</h3>
-                <div id=\"dash-rentgen-bars\"></div>
-                <div class=\"trading-section\">
-                    <h4 style=\"text-align:center; margin-bottom:15px;\">📈 O'zlashtirish Dinamikasi</h4>
-                    <div class=\"trading-chart neo-inset\">
-                        <div class=\"trading-midline\"></div>
-                        <div id=\"trade-history\" class=\"trading-history-bars\"></div>
+            <div id="dashboard-rentgen" class="neo-card slide-up mt-30 p-25">
+                <h3 style="text-align:center; margin-bottom:20px;">📊 "Rentgen" Tahlili (Umumiy O'zlashtirish)</h3>
+                <div id="dash-rentgen-bars"></div>
+                <div class="trading-section mt-30">
+                    <h4 style="text-align:center; margin-bottom:15px;">📈 O'zlashtirish Dinamikasi</h4>
+                    <div class="trading-chart neo-inset">
+                        <div class="trading-midline"></div>
+                        <div id="trade-history" class="trading-history-bars"></div>
                     </div>
                 </div>
             </div>
         </div>
+        <footer class="app-footer">© 2026 Adham's Development. Soft LMS Edition.</footer>
     </div>
 
-    <div id=\"modal-level\" class=\"modal-overlay\" onclick=\"closeModal(event, 'modal-level')\">
-        <div class=\"modal-content glass-panel\"><h2 id=\"modal-subject-title\" style=\"text-align:center;\">Fan</h2><div class=\"level-grid\" id=\"level-grid-box\"></div></div>
+    <div id="modal-level" class="modal-overlay" onclick="closeModal(event, 'modal-level')">
+        <div class="modal-content glass-panel"><h2 id="modal-subject-title" style="text-align:center;">Fan</h2><div class="level-grid" id="level-grid-box"></div></div>
     </div>
-    <div id=\"modal-chapters\" class=\"modal-overlay\" onclick=\"closeModal(event, 'modal-chapters')\">
-        <div class=\"modal-content glass-panel\"><h2 style=\"text-align:center;\">Boblar</h2><div class=\"level-grid\" id=\"chapters-grid-box\"></div></div>
+    <div id="modal-chapters" class="modal-overlay" onclick="closeModal(event, 'modal-chapters')">
+        <div class="modal-content glass-panel"><h2 style="text-align:center;">Barcha Boblar</h2><div class="level-grid" id="chapters-grid-box"></div></div>
     </div>
-    <div id=\"setup-screen\" class=\"modal-overlay\" onclick=\"closeModal(event, 'setup-screen')\">
-        <div class=\"modal-content glass-panel\">
-            <h2 style=\"text-align:center; margin-bottom:20px;\">⚙️ Parametrlar</h2>
-            <div class=\"segmented-control neo-inset\"><button class=\"seg-btn diff-easy active\" onclick=\"setDifficulty('easy', this)\">Oson</button><button class=\"seg-btn diff-medium\" onclick=\"setDifficulty('medium', this)\">O'rta</button><button class=\"seg-btn diff-hard\" onclick=\"setDifficulty('hard', this)\">Qiyin</button></div>
-            <div class=\"segmented-control neo-inset\" style=\"margin-top:15px;\"><button class=\"seg-btn order-random active\" onclick=\"setOrder('random', this)\">🎲 Aralash</button><button class=\"seg-btn order-seq\" onclick=\"setOrder('seq', this)\">⬇️ Ketma-ket</button></div>
-            <div style=\"display:flex; gap:10px; margin-top:20px;\"><button class=\"neo-btn\" onclick=\"closeModalDirect('setup-screen')\">Bekor</button><button class=\"neo-btn btn-primary\" onclick=\"applySetup()\">Boshlash 🚀</button></div>
+    <div id="setup-screen" class="modal-overlay" onclick="closeModal(event, 'setup-screen')">
+        <div class="modal-content glass-panel">
+            <h2 style="text-align:center; margin-bottom:20px;">⚙️ Sessiya Parametrlari</h2>
+            <div class="setup-group">
+                <label>Vaqt (Dinamik):</label>
+                <div class="segmented-control neo-inset diff-control"><button class="seg-btn active" onclick="setDifficulty('easy', this)">Oson</button><button class="seg-btn" onclick="setDifficulty('medium', this)">O'rta</button><button class="seg-btn" onclick="setDifficulty('hard', this)">Qiyin</button></div>
+            </div>
+            <div class="setup-group mt-15">
+                <label>Tartib:</label>
+                <div class="segmented-control neo-inset order-control"><button class="seg-btn active" onclick="setOrder('random', this)">🎲 Aralash</button><button class="seg-btn" onclick="setOrder('seq', this)">⬇️ Ketma-ket</button></div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button class="neo-btn" onclick="closeModalDirect('setup-screen')">Bekor</button><button class="neo-btn btn-primary" onclick="applySetup()">Boshlash 🚀</button></div>
         </div>
     </div>
 
-    <div id=\"modal-result\" class=\"modal-overlay\">
-        <div class=\"modal-content glass-panel text-center\">
-            <h2>Natija</h2><div class=\"donut neo-inset\" id=\"result-donut\"><span id=\"result-percent\">0%</span></div><p id=\"result-msg\"></p>
-            <div class=\"neo-inset\" style=\"padding:15px; margin:20px 0; border-radius:15px;\"><div id=\"rentgen-bars\"></div></div>
-            <button class=\"neo-btn btn-gold\" id=\"cert-btn\" style=\"display:none; width:100%; margin-bottom:10px;\" onclick=\"showCertificate()\">🏆 Sertifikatni Olish</button>
-            <button class=\"neo-btn\" onclick=\"goHome()\">Menyuga qaytish</button>
+    <div id="modal-result" class="modal-overlay">
+        <div class="modal-content glass-panel text-center">
+            <h2>Sessiya Yakuni</h2><div class="donut neo-inset" id="result-donut"><span id="result-percent">0%</span></div><p id="result-msg"></p>
+            <div id="rentgen-bars" class="neo-inset p-15 mt-20" style="text-align:left;"></div>
+            <button class="neo-btn btn-gold" id="cert-btn" style="display:none; width:100%; margin-bottom:10px;" onclick="showCertificate()">🏆 Sertifikatni Olish</button>
+            <button class="neo-btn" onclick="goHome()">Asosiy menyuga qaytish</button>
         </div>
     </div>
 
-    <div id=\"modal-donate\" class=\"modal-overlay\">
-        <div class=\"modal-content glass-panel text-center\">
-            <div style=\"font-size:3rem;\">☕</div><h2>Samimiy Murojaat</h2>
-            <p style=\"font-size:0.9rem; color:var(--text-sec); margin:15px 0;\">Platforma foyda keltirgan bo'lsa, bitta qahva puli bilan minnatdorchilik bildirishingiz mumkin!</p>
-            <div class=\"card-copy neo-btn\" onclick=\"copyCard()\">Humo: <b id=\"card-num-donate\">9860350141282409</b> 📋</div>
-            <a href=\"https://t.me/atamuratovs\" class=\"text-primary\" style=\"display:block; margin:15px 0; font-weight:bold;\">Telegram orqali bog'lanish ↗️</a>
-            <button class=\"neo-btn btn-success\" onclick=\"closeModalDirect('modal-donate')\">Rahmat!</button>
+    <div id="modal-donate" class="modal-overlay">
+        <div class="modal-content glass-panel text-center">
+            <div style="font-size:3rem;">☕</div><h2>Samimiy Murojaat</h2>
+            <p style="font-size:0.95rem; color:var(--text-sec); margin:15px 0;">Platforma sizga foyda keltirgan bo'lsa va dasturchini qo'shimcha qo'llab-quvvatlashni xohlasangiz, bitta qahva puli bilan minnatdorchilik bildirishingiz mumkin!</p>
+            <div class="card-copy neo-btn" onclick="copyCard()">Humo: <b id="card-num-donate">9860350141282409</b> 📋</div>
+            <a href="https://t.me/atamuratovs" class="text-primary" style="display:block; margin:15px 0; font-weight:bold;">Adminga yozish (TG) ↗️</a>
+            <button class="neo-btn btn-success" onclick="closeModalDirect('modal-donate')">Rahmat!</button>
         </div>
     </div>
 
-    <div id=\"modal-cert\" class=\"modal-overlay\" style=\"z-index:3000;\">
-        <div class=\"modal-content\" style=\"background:transparent; box-shadow:none; max-width:850px; padding:0;\">
-            <div id=\"printable-cert\" class=\"css-cert-container\">
-                <div class=\"css-cert-border\"><div class=\"css-cert-inner\">
-                    <h1 class=\"css-cert-title\">MUVAFFAQIYAT SERTIFIKATI</h1>
-                    <p class=\"css-cert-subtitle\">PRO EXAM Akademik Platformasi</p>
-                    <p style=\"color:#fff; font-style:italic;\">Ushbu sertifikat</p>
-                    <h2 class=\"css-cert-name\" id=\"cert-student-name\"></h2>
-                    <p style=\"color:#fff; text-align:center; max-width:80%; margin-bottom:20px;\">ga intellektual sinovda yuqori bilim namoyon etgani uchun taqdim etiladi.</p>
-                    <div class=\"css-cert-stats\">
-                        <p>Rejim: <span id=\"cert-mode-name\" style=\"color:#fff;\"></span></p>
-                        <p>Natija: <span id=\"cert-score\" style=\"color:#fff;\"></span></p>
-                        <p>Baza: <span id=\"cert-global-stats\" style=\"color:#fff;\"></span></p>
-                        <p>Sana: <span id=\"cert-date\" style=\"color:#fff;\"></span></p>
+    <div id="modal-cert" class="modal-overlay" style="z-index:3000;">
+        <div class="modal-content" style="background:transparent; box-shadow:none; max-width:850px; padding:0; overflow:visible;">
+            <div id="printable-cert" class="css-cert-container">
+                <div class="css-cert-border"><div class="css-cert-inner">
+                    <h1 class="css-cert-title">MUVAFFAQIYAT SERTIFIKATI</h1>
+                    <p class="css-cert-subtitle">PRO EXAM Akademik Platformasi</p>
+                    <p class="cert-body-top">Ushbu sertifikat</p>
+                    <h2 class="css-cert-name" id="cert-student-name"></h2>
+                    <p class="cert-body-bottom">ga intellektual sinovda yuqori darajadagi bilimini namoyon etgani uchun taqdim etiladi.</p>
+                    <div class="css-cert-stats neo-inset">
+                        <p>Rejim: <span id="cert-mode-name"></span></p>
+                        <p>Natija: <span id="cert-score"></span></p>
+                        <p>Baza: <span id="cert-global-stats"></span></p>
+                        <p>Sana: <span id="cert-date"></span></p>
                     </div>
-                    <div class=\"css-cert-sign\"><img src=\"imzo.png\" class=\"css-cert-imzo-img\"><hr style=\"border-top:1px solid var(--gold); margin:5px 0;\"><span style=\"color:#fff; font-size:0.8rem;\">Platforma Yaratuvchisi</span></div>
-                    <div class=\"css-cert-seal\">PREMIUM</div>
+                    <div class="css-cert-sign"><img src="imzo.png" class="css-cert-imzo-img"><hr><span style="color:#fff; font-size:0.85rem;">Platforma Yaratuvchisi</span></div>
+                    <div class="css-cert-seal">PREMIUM</div>
                 </div></div>
             </div>
-            <div class=\"no-print\" style=\"display:flex; gap:10px; margin-top:20px; justify-content:center;\">
-                <button class=\"neo-btn btn-success\" onclick=\"window.print()\">Yuklab olish 📥</button>
-                <button class=\"neo-btn\" style=\"background:rgba(0,0,0,0.5); color:#fff;\" onclick=\"goHome()\">Chiqish</button>
-            </div>
+            <div class="cert-actions no-print"><button class="neo-btn btn-success" onclick="window.print()">Yuklab olish (PDF/Print) 📥</button><button class="neo-btn" style="background:rgba(0,0,0,0.5); color:#fff;" onclick="goHome()">Chiqish</button></div>
         </div>
     </div>
 
-    <div id=\"test-screen\" class=\"screen hidden\">
-        <div class=\"progress-bar-container\"><div id=\"progress-fill\"></div></div>
-        <div id=\"combo-badge\" class=\"combo-badge hidden\">COMBO x3 🔥</div>
-        <div id=\"hacker-badge\" class=\"hacker-badge hidden\">HACKER DARAJASI 💻!</div>
-        <div id=\"boss-fight-warning\" class=\"boss-warning hidden\">⚠️ BOSS FIGHT ⚠️</div>
-        <button id=\"restart-mini-btn\" class=\"restart-mini-btn hidden neo-btn-circle\" onclick=\"confirmRestart()\">🔄</button>
-        <div class=\"container test-layout\">
-            <div class=\"map-container neo-inset\"><div id=\"indicator-map\" class=\"mini-map\"></div></div>
-            <div class=\"question-container\">
-                <div id=\"question-list-wrapper\" class=\"q-list-wrapper\"><div id=\"all-questions-area\"></div><div style=\"height:30vh;\"></div></div>
-                <div class=\"nav-controls\">
-                    <button class=\"neo-btn\" onclick=\"move(-1)\">⬅️ Oldingi</button>
-                    <button id=\"finish-btn\" class=\"neo-btn btn-success hidden\" onclick=\"finishExam()\">Yakunlash ✔️</button>
-                    <button class=\"neo-btn\" onclick=\"move(1)\">Keyingi ➡️</button>
+    <div id="test-screen" class="screen hidden">
+        <div class="progress-bar-container"><div id="progress-fill"></div></div>
+        <div id="combo-badge" class="combo-badge hidden">COMBO x3 🔥</div>
+        <div id="hacker-badge" class="hacker-badge hidden">HACKER DARAJASI 💻!</div>
+        <div id="boss-fight-warning" class="boss-warning hidden">⚠️ BOSS FIGHT ⚠️</div>
+        <button id="restart-mini-btn" class="restart-mini-btn hidden neo-btn-circle" onclick="confirmRestart()" title="Boshidan boshlash">🔄</button>
+        <div class="container test-layout">
+            <div class="map-container neo-inset"><div id="indicator-map" class="mini-map"></div></div>
+            <div class="question-container">
+                <div id="question-list-wrapper" class="q-list-wrapper"><div id="all-questions-area"></div><div style="height:35vh;"></div></div>
+                <div class="nav-controls">
+                    <button class="neo-btn" onclick="move(-1)">⬅️ Oldingi</button>
+                    <button id="finish-btn" class="neo-btn btn-success hidden" onclick="finishExam()">Yakunlash ✔️</button>
+                    <button class="neo-btn" onclick="move(1)">Keyingi ➡️</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src=\"script.js\"></script>
+    <script src="script.js"></script>
 </body>
 </html>
