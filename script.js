@@ -1,609 +1,403 @@
-// Global o'zgaruvchilar va holat
-const AppState = {
-    subjects: [
-        { name: "Musiqa nazariyasi", file: "musiqa_nazariyasi.json" },
-        { name: "Cholg'u ijrochiligi", file: "cholgu_ijrochiligi.json" },
-        { name: "Vokal ijrochiligi", file: "vokal_ijrochiligi.json" },
-        { name: "Metodika repertuar", file: "metodika_repertuar.json" }
-    ],
-    currentQuestions: [],
-    currentQuestionIndex: 0,
-    score: 0,
-    wrongAnswersCount: 0,
-    remainingQuestionsCount: 0,
-    selectedSubject: null,
-    streak: 0,
-    combo: 0,
-    lastCorrect: true,
-    bossMode: false,
-    audioContext: null,
-    wrongAnswers: [], // Xato javob berilgan savollarni saqlash uchun
-    timer: null,
-    timeSpent: 0,
-    themeSwitchChecked: false // Tema qo'lda o'zgartirilganligini kuzatish
-};
+// ==========================================
+// GOOGLE SHEETS & PWA CONFIGURATION
+// ==========================================
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzC4-Axk2bQsnHJYxMhzn0fblk48j2fWAheHhCxJF5as8fH-NKlIgV0-C7uO6mQfHAM/exec";
 
-// HTML elementlarini JS orqali yaratish va ularga murojaat
-const UIElements = {
-    root: document.getElementById('root'),
-    header: null,
-    main: null,
-    footer: null,
-    subjectSelection: null,
-    quizContainer: null,
-    endScreen: null,
-    questionText: null,
-    optionsContainer: null,
-    progressBarFill: null,
-    progressPercent: null,
-    statCorrect: null,
-    statWrong: null,
-    statRemaining: null,
-    statScore: null,
-    streakValue: null,
-    comboValue: null,
-    comboVisual: null,
-    themeSwitch: null,
-    bossWarning: null
-};
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW xatolik'));
+  });
+}
 
-// Ilova ishga tushishi
-function initApp() {
-    createUIStructure();
-    checkDeviceTheme();
-    loadLastResults();
-    AppState.streak = parseInt(localStorage.getItem('streak')) || 0;
-    updateStreakUI();
-    
-    UIElements.themeSwitch.addEventListener('change', toggleTheme);
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-        if (!AppState.themeSwitchChecked) { // Agar foydalanuvchi qo'lda o'zgartirmagan bo'lsa
-             setTheme(event.matches ? 'dark' : 'light');
+function getOrCreateDeviceId() {
+    let deviceId = localStorage.getItem('adham_pro_device_id');
+    if (!deviceId) {
+        deviceId = 'dev_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        localStorage.setItem('adham_pro_device_id', deviceId);
+    }
+    return deviceId;
+}
+
+// PWA INSTALL LOGIC
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); deferredPrompt = e;
+    const installAppBtn = document.getElementById('install-app-btn');
+    if (installAppBtn) installAppBtn.classList.remove('hidden');
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const installAppBtn = document.getElementById('install-app-btn');
+    if (installAppBtn) {
+        installAppBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') installAppBtn.classList.add('hidden');
+                deferredPrompt = null;
+            }
+        });
+    }
+});
+
+// ==========================================
+// SECURITY: ANTI-CHEAT, ADMIN KICK & ADMIN MODE
+// ==========================================
+function copyCard() {
+    const cardText = document.getElementById("card-num") ? document.getElementById("card-num").innerText : "9860350141282409";
+    navigator.clipboard.writeText(cardText).then(() => {
+        alert("💳 Karta raqami nusxalandi: " + cardText + "\nEndi ilovangizga o'tib to'lovni amalga oshirishingiz mumkin. Qo'llab-quvvatlaganingiz uchun rahmat!");
+    }).catch(err => console.error(err));
+}
+
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', function(e) {
+    if(e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) { 
+        e.preventDefault(); return false; 
+    }
+    if(e.ctrlKey && e.keyCode === 67) { 
+        e.preventDefault(); alert("⚠️ Ko'chirish (nusxalash) qat'iyan taqiqlangan!"); return false; 
+    }
+});
+
+let cheatWarnings = 0;
+document.addEventListener("visibilitychange", () => {
+    const testScreen = document.getElementById("test-screen");
+    if (testScreen && !testScreen.classList.contains("hidden") && document.hidden) {
+        cheatWarnings++;
+        if (cheatWarnings >= 3) {
+            alert("❌ DIQQAT! 3 marta oynadan chiqdingiz. Intellektual sessiya avtomatik yakunlandi!");
+            finishExam(); 
+        } else {
+            alert(`⚠️ OGOHLANTIRISH (${cheatWarnings}/3)!\n\nBoshqa oynaga o'tish (Ko'chirish) qat'iyan taqiqlanadi!`);
         }
-    });
+    }
+});
 
-    // Anti-cheat choralari
-    document.addEventListener('copy', (e) => { e.preventDefault(); showNotification('⚠️ Ko\'chirish bloklandi!'); });
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
-    window.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && (e.key === 'c' || e.key === 'u')) { e.preventDefault(); showNotification('⚠️ Cheat bloklandi!'); }
-        if (e.key === 'F12') { e.preventDefault(); showNotification('⚠️ DevTools bloklandi!'); }
-    });
+async function checkAdminBlock() {
+    const savedName = localStorage.getItem('pro_exam_name');
+    if (!savedName) return; 
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "check_block", login: savedName }) });
+        const result = await response.json();
+        if (result.blocked) {
+            alert("❌ DIQQAT: Tizim ma'muriyati (Admin) tomonidan bloklangansiz!");
+            localStorage.removeItem('pro_exam_auth'); localStorage.removeItem('pro_exam_name');
+            location.reload(); 
+        }
+    } catch (e) {}
+}
+
+async function authenticateUser() {
+    const loginVal = document.getElementById('auth-login').value.trim();
+    const passVal = document.getElementById('auth-password').value.trim();
+    const keygenVal = document.getElementById('auth-keygen').value.trim();
+    const errorEl = document.getElementById('auth-error');
+    const btn = document.getElementById('btn-auth');
+
+    if(!loginVal || !passVal) { errorEl.innerText = "Login va Parol majburiy!"; errorEl.classList.remove('hidden'); return; }
+    btn.innerText = "Tekshirilmoqda..."; btn.disabled = true; errorEl.classList.add('hidden');
 
     try {
-        AppState.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ login: loginVal, password: passVal, keygen: keygenVal, deviceId: getOrCreateDeviceId() }) });
+        const result = await response.json();
+        if (result.success) {
+            localStorage.setItem('pro_exam_auth', 'true');
+            localStorage.setItem('pro_exam_name', result.name || loginVal);
+            document.getElementById('student-name').value = result.name || loginVal;
+            switchScreen('auth-screen', 'welcome-screen');
+            setInterval(checkAdminBlock, 45000); // Check every 45s
+        } else {
+            errorEl.innerText = result.message; errorEl.classList.remove('hidden');
+        }
     } catch (e) {
-        console.warn("Web Audio API not supported.");
-    }
-    
-    renderSubjectSelection();
-}
-
-// UI strukturasini yaratish (HTML fayldan JSga o'tkazildi, oldingi dizayn asosida)
-function createUIStructure() {
-    // Header
-    UIElements.header = document.createElement('header');
-    UIElements.header.innerHTML = `
-        <div class="logo-box">
-            <img src="logo.png" alt="CSPI Logo" class="logo-img">
-            <h1>PRO EXAM</h1>
-        </div>
-        <div class="header-controls">
-            <span class="uni-name">CHDPU</span>
-            <label class="theme-switch">
-                <input type="checkbox" id="theme-checkbox">
-                <span class="slider round"></span>
-            </label>
-        </div>
-        <div class="streak-container" title="Kunlik seriya">
-            🔥 <span id="streak-value">0</span> kun
-        </div>
-    `;
-    UIElements.themeSwitch = UIElements.header.querySelector('#theme-checkbox');
-    UIElements.streakValue = UIElements.header.querySelector('#streak-value');
-    
-    // Main
-    UIElements.main = document.createElement('main');
-    
-    // Subject Selection
-    UIElements.subjectSelection = document.createElement('section');
-    UIElements.subjectSelection.id = 'subject-selection';
-    UIElements.subjectSelection.innerHTML = `
-        <h2>Fanlarni tanlang</h2>
-        <div class="subject-buttons-container"></div>
-        <div class="last-results" id="last-results"></div>
-    `;
-    
-    // Quiz Container
-    UIElements.quizContainer = document.createElement('section');
-    UIElements.quizContainer.id = 'quiz-container';
-    UIElements.quizContainer.classList.add('hidden');
-    UIElements.quizContainer.innerHTML = `
-        <div class="progress-container">
-            <div class="progress-bar-fill" id="progress-bar-fill"></div>
-            <div class="progress-percent" id="progress-percent">0%</div>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="stat-box correct" title="To'g'ri">✅ <span id="stat-correct">0</span></div>
-            <div class="stat-box wrong" title="Noto'g'ri">❌ <span id="stat-wrong">0</span></div>
-            <div class="stat-box remaining" title="Qolgan">❓ <span id="stat-remaining">0</span></div>
-            <div class="stat-box score" title="Ball">🏆 <span id="stat-score">0</span></div>
-        </div>
-
-        <div class="question-box">
-            <p id="question-text">Savol yuklanmoqda...</p>
-        </div>
-        
-        <div class="options-container" id="options-container"></div>
-        
-        <div class="combo-container" title="Combo">
-            ⭐ <span id="combo-value">0</span>x
-        </div>
-        <div class="boss-warning hidden">
-            ⚠️ DIQQAT! BOSS BOSQICHI! Oxirgi 5 ta savol!
-        </div>
-    `;
-    UIElements.questionText = UIElements.quizContainer.querySelector('#question-text');
-    UIElements.optionsContainer = UIElements.quizContainer.querySelector('#options-container');
-    UIElements.progressBarFill = UIElements.quizContainer.querySelector('#progress-bar-fill');
-    UIElements.progressPercent = UIElements.quizContainer.querySelector('#progress-percent');
-    UIElements.statCorrect = UIElements.quizContainer.querySelector('#stat-correct');
-    UIElements.statWrong = UIElements.quizContainer.querySelector('#stat-wrong');
-    UIElements.statRemaining = UIElements.quizContainer.querySelector('#stat-remaining');
-    UIElements.statScore = UIElements.quizContainer.querySelector('#stat-score');
-    UIElements.comboValue = UIElements.quizContainer.querySelector('#combo-value');
-    UIElements.bossWarning = UIElements.quizContainer.querySelector('.boss-warning');
-    
-    // End Screen
-    UIElements.endScreen = document.createElement('section');
-    UIElements.endScreen.id = 'end-screen';
-    UIElements.endScreen.classList.add('hidden');
-    UIElements.endScreen.innerHTML = `
-        <div class="end-card glass">
-            <h2>Test Yakunlandi!</h2>
-            <p id="end-message"></p>
-            <div class="end-stats">
-                <p>Jami ball: <span id="end-score"></span></p>
-                <p>To'g'ri javoblar: <span id="end-correct"></span></p>
-                <p>Noto'g'ri javoblar: <span id="end-wrong"></span></p>
-                <p>Sarflangan vaqt: <span id="end-time"></span></p>
-            </div>
-            <div class="error-analysis hidden" id="error-analysis">
-                <h3>Xatolar tahlili:</h3>
-                <ul id="error-list"></ul>
-            </div>
-            <button id="restart-btn" class="main-btn">Bosh sahifaga qaytish</button>
-        </div>
-    `;
-    UIElements.endScreen.querySelector('#restart-btn').addEventListener('click', backToSubjectSelection);
-
-    // Footer
-    UIElements.footer = document.createElement('footer');
-    UIElements.footer.innerHTML = `
-        <div class="developer-info">
-            <img src="imzo.png" alt="Adhams signature" class="signature-img">
-            <span>By Adham's Development</span>
-        </div>
-        <div class="social-links">
-            <a href="#" class="social-icon"><img src="insta.png" alt="Instagram"></a>
-            <a href="#" class="social-icon"><img src="tg.png" alt="Telegram"></a>
-        </div>
-    `;
-
-    // Combo Visual effect element
-    UIElements.comboVisual = document.createElement('div');
-    UIElements.comboVisual.classList.add('combo-visual');
-
-    // Root-ga barcha elementlarni qo'shish
-    UIElements.main.appendChild(UIElements.subjectSelection);
-    UIElements.main.appendChild(UIElements.quizContainer);
-    UIElements.main.appendChild(UIElements.endScreen);
-    
-    UIElements.root.appendChild(UIElements.header);
-    UIElements.root.appendChild(UIElements.main);
-    UIElements.root.appendChild(UIElements.footer);
-    UIElements.root.appendChild(UIElements.comboVisual);
-}
-
-// Mavzu tanlash ekranini ko'rsatish
-function renderSubjectSelection() {
-    const container = UIElements.subjectSelection.querySelector('.subject-buttons-container');
-    container.innerHTML = '';
-    
-    AppState.subjects.forEach(subject => {
-        const button = document.createElement('button');
-        button.className = 'subject-btn glass-btn';
-        button.textContent = subject.name;
-        button.addEventListener('click', () => startQuiz(subject));
-        container.appendChild(button);
-    });
-}
-
-// Testni boshlash
-async function startQuiz(subject) {
-    AppState.selectedSubject = subject;
-    AppState.quizContainer.classList.remove('hidden');
-    AppState.subjectSelection.classList.add('hidden');
-    AppState.endScreen.classList.add('hidden');
-    
-    UIElements.questionText.textContent = `Yuklanmoqda... (${subject.name})`;
-    UIElements.optionsContainer.innerHTML = '';
-
-    try {
-        const data = await fetchJSONData(subject.file);
-        if (!data || data.length === 0) {
-            throw new Error("Savollar topilmadi.");
-        }
-        AppState.currentQuestions = shuffleArray(data);
-        AppState.currentQuestionIndex = 0;
-        AppState.score = 0;
-        AppState.wrongAnswersCount = 0;
-        AppState.combo = 0;
-        AppState.bossMode = false;
-        AppState.wrongAnswers = [];
-        AppState.remainingQuestionsCount = AppState.currentQuestions.length;
-        AppState.timeSpent = 0;
-        
-        startTimer();
-        updateUIElements();
-        showQuestion();
-        
-        // Streak-ni yangilash
-        const lastDate = localStorage.getItem('lastQuizDate');
-        const today = new Date().toISOString().split('T')[0];
-        if (lastDate !== today) {
-            AppState.streak++;
-            localStorage.setItem('streak', AppState.streak);
-            localStorage.setItem('lastQuizDate', today);
-            updateStreakUI();
-        }
-
-    } catch (error) {
-        showNotification(`Xato: ${error.message}`);
-        backToSubjectSelection();
+        errorEl.innerText = "Tarmoqda xatolik."; errorEl.classList.remove('hidden');
+    } finally {
+        btn.innerText = "Kirishni Tasdiqlash 🔒"; btn.disabled = false;
     }
 }
 
-// JSON ma'lumotlarini yuklash
-async function fetchJSONData(fileName) {
-    try {
-        const response = await fetch(fileName);
-        if (!response.ok) {
-            throw new Error(`Faylni yuklab bo'lmadi: ${fileName}`);
-        }
-        return await response.json();
-    } catch (error) {
-        throw error;
-    }
-}
-
-// Savolni ko'rsatish
-function showQuestion() {
-    if (AppState.currentQuestionIndex >= AppState.currentQuestions.length) {
-        endQuiz();
-        return;
-    }
-
-    const question = AppState.currentQuestions[AppState.currentQuestionIndex];
-    UIElements.questionText.textContent = `${AppState.currentQuestionIndex + 1}. ${question.question}`;
-    UIElements.optionsContainer.innerHTML = '';
-
-    // "Boss" bosqichini tekshirish (oxirgi 5 ta savol)
-    if (AppState.remainingQuestionsCount <= 5 && AppState.remainingQuestionsCount > 0) {
-        if (!AppState.bossMode) {
-            AppState.bossMode = true;
-            UIElements.bossWarning.classList.remove('hidden');
-            document.body.classList.add('boss-mode');
-            playSound(440, 0.5); // "Boss" tovushi
-            setTimeout(() => playSound(660, 0.3), 300);
-            showNotification('🔥 BOSS BOSQICHI BOSHLANDI!', 'warning');
-        }
-    } else if (AppState.bossMode) {
-         AppState.bossMode = false;
-         UIElements.bossWarning.classList.add('hidden');
-         document.body.classList.remove('boss-mode');
-    }
-
-    const options = shuffleArray([...question.options, question.answer]);
-    options.forEach(option => {
-        const button = document.createElement('button');
-        button.className = 'option-btn glass-btn';
-        button.textContent = option;
-        button.addEventListener('click', () => checkAnswer(option));
-        UIElements.optionsContainer.appendChild(button);
-    });
-    
-    updateProgress();
-}
-
-// Javobni tekshirish
-function checkAnswer(selectedOption) {
-    const question = AppState.currentQuestions[AppState.currentQuestionIndex];
-    const optionButtons = UIElements.optionsContainer.querySelectorAll('.option-btn');
-    
-    let isCorrect = (selectedOption === question.answer);
-    
-    // Tugmalarni nofaol qilish
-    optionButtons.forEach(btn => btn.disabled = true);
-
-    // Vizual aloqa va tovush
-    if (isCorrect) {
-        AppState.score += 10 + (AppState.combo * 2); // Combo balli
-        AppState.lastCorrect = true;
-        AppState.combo++;
-        playSound(880, 0.1, 'sine'); // To'g'ri tovush
-        showNotification('To\'g\'ri!', 'success');
-        showComboVisual();
-        
-        // To'g'ri javobni yashil rangga bo'yash
-        optionButtons.forEach(btn => {
-            if (btn.textContent === selectedOption) btn.classList.add('correct');
-        });
-
+// ==========================================
+// VIBE & AUDIO
+// ==========================================
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playFeedback(type) {
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
+    if(type === 'correct') {
+        osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        if("vibrate" in navigator) navigator.vibrate(50);
     } else {
-        AppState.score = Math.max(0, AppState.score - 5);
-        AppState.wrongAnswersCount++;
-        AppState.lastCorrect = false;
-        AppState.combo = 0;
-        AppState.wrongAnswers.push({ ...question, selected: selectedOption }); // Xato javobni saqlash
-        playSound(220, 0.2, 'square'); // Noto'g'ri tovush
-        showNotification('Noto\'g\'ri!', 'error');
-        
-        // Noto'g'ri va to'g'ri javoblarni ko'rsatish
-        optionButtons.forEach(btn => {
-            if (btn.textContent === selectedOption) btn.classList.add('wrong');
-            if (btn.textContent === question.answer) btn.classList.add('correct'); // To'g'ri javobni ko'rsatish
-        });
-    }
-
-    updateUIElements();
-    AppState.currentQuestionIndex++;
-    AppState.remainingQuestionsCount--;
-
-    // Keyingi savolga o'tish
-    setTimeout(showQuestion, isCorrect ? 500 : 1500); // Noto'g'ri javobda ko'proq kutish
-}
-
-// Testni tugatish
-function endQuiz() {
-    clearInterval(AppState.timer);
-    AppState.quizContainer.classList.add('hidden');
-    AppState.endScreen.classList.remove('hidden');
-    document.body.classList.remove('boss-mode');
-    UIElements.bossWarning.classList.add('hidden');
-    AppState.bossMode = false;
-    
-    // Natijalarni hisoblash
-    const totalQuestions = AppState.currentQuestions.length;
-    const correctCount = totalQuestions - AppState.wrongAnswersCount;
-    const timeFormatted = formatTime(AppState.timeSpent);
-    
-    UIElements.endScreen.querySelector('#end-score').textContent = AppState.score;
-    UIElements.endScreen.querySelector('#end-correct').textContent = correctCount;
-    UIElements.endScreen.querySelector('#end-wrong').textContent = AppState.wrongAnswersCount;
-    UIElements.endScreen.querySelector('#end-time').textContent = timeFormatted;
-    
-    // Yakuniy xabar
-    let message = '';
-    if (AppState.score > totalQuestions * 8) message = 'Ajoyib natija! SIZ PRO MASTERSIZ! 🏆';
-    else if (AppState.score > totalQuestions * 5) message = 'Yaxshi natija, davom eting! 💪';
-    else message = 'Ko\'proq shug\'ullaning, hammasi yaxshi bo\'ladi! ✨';
-    
-    UIElements.endScreen.querySelector('#end-message').textContent = message;
-    
-    // Xatolar tahlili
-    const errorAnalysis = UIElements.endScreen.querySelector('#error-analysis');
-    const errorList = UIElements.endScreen.querySelector('#error-list');
-    errorList.innerHTML = '';
-    
-    if (AppState.wrongAnswers.length > 0) {
-        errorAnalysis.classList.remove('hidden');
-        AppState.wrongAnswers.forEach(err => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <p class="error-q">Savol: ${err.question}</p>
-                <p class="error-a correct">To'g'ri javob: ${err.answer}</p>
-                <p class="error-a wrong">Sizning javobingiz: ${err.selected}</p>
-            `;
-            errorList.appendChild(li);
-        });
-    } else {
-        errorAnalysis.classList.add('hidden');
-    }
-    
-    // Natijani saqlash
-    saveQuizResult();
-}
-
-// Natijani localStorage-ga saqlash
-function saveQuizResult() {
-    const results = JSON.parse(localStorage.getItem('proExamResults')) || [];
-    const newResult = {
-        subject: AppState.selectedSubject.name,
-        score: AppState.score,
-        correct: AppState.currentQuestions.length - AppState.wrongAnswersCount,
-        wrong: AppState.wrongAnswersCount,
-        date: new Date().toLocaleDateString()
-    };
-    results.unshift(newResult); // Yangi natijani boshiga qo'shish
-    localStorage.setItem('proExamResults', JSON.stringify(results.slice(0, 5))); // Faqat oxirgi 5 ta natijani saqlash
-    loadLastResults(); // Bosh sahifani yangilash
-}
-
-// Oxirgi natijalarni yuklash
-function loadLastResults() {
-    const resultsContainer = UIElements.subjectSelection.querySelector('#last-results');
-    resultsContainer.innerHTML = '';
-    
-    const results = JSON.parse(localStorage.getItem('proExamResults')) || [];
-    
-    if (results.length > 0) {
-        resultsContainer.innerHTML = '<h3>Oxirgi natijalar:</h3>';
-        const list = document.createElement('ul');
-        results.forEach(res => {
-            const li = document.createElement('li');
-            li.textContent = `${res.date}: ${res.subject} - ${res.score} ball (${res.correct}✅ / ${res.wrong}❌)`;
-            list.appendChild(li);
-        });
-        resultsContainer.appendChild(list);
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        if("vibrate" in navigator) navigator.vibrate([150, 100, 150]);
     }
 }
 
-// Bosh sahifaga qaytish
-function backToSubjectSelection() {
-    AppState.quizContainer.classList.add('hidden');
-    AppState.endScreen.classList.add('hidden');
-    AppState.subjectSelection.classList.remove('hidden');
-    
-    // Test holatini tozalash (agar kerak bo'lsa)
-    clearInterval(AppState.timer);
-    AppState.timeSpent = 0;
-    document.body.classList.remove('boss-mode');
-}
-
-// Massivni aralashtirish (Fisher-Yates)
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-// UI elementlarini yangilash
-function updateUIElements() {
-    UIElements.statCorrect.textContent = AppState.currentQuestionIndex + 1 - AppState.wrongAnswersCount;
-    UIElements.statWrong.textContent = AppState.wrongAnswersCount;
-    UIElements.statRemaining.textContent = AppState.remainingQuestionsCount;
-    UIElements.statScore.textContent = AppState.score;
-    UIElements.comboValue.textContent = AppState.combo;
-    
-    // Combo konteynerini ko'rsatish/yashirish
-    const comboContainer = UIElements.quizContainer.querySelector('.combo-container');
-    if (AppState.combo > 1) {
-        comboContainer.classList.add('active');
-    } else {
-        comboContainer.classList.remove('active');
+function createParticles(event) {
+    if(!event) return; const x = event.clientX; const y = event.clientY;
+    for (let i = 0; i < 15; i++) {
+        let p = document.createElement('div'); p.className = 'magic-particle'; document.body.appendChild(p);
+        let destX = x + (Math.random() - 0.5) * 140; let destY = y + (Math.random() - 0.5) * 140; p.style.left = x + 'px'; p.style.top = y + 'px';
+        p.animate([{ transform: 'translate(0, 0) scale(1)', opacity: 1 }, { transform: `translate(${destX - x}px, ${destY - y}px) scale(0)`, opacity: 0 }], { duration: 600, easing: 'ease-out' });
+        setTimeout(() => p.remove(), 600);
     }
 }
 
-// Progress barni yangilash
-function updateProgress() {
-    const totalQuestions = AppState.currentQuestions.length;
-    const currentQ = AppState.currentQuestionIndex + 1;
-    const percent = Math.floor((currentQ / totalQuestions) * 100);
-    
-    UIElements.progressBarFill.style.width = `${percent}%`;
-    UIElements.progressPercent.textContent = `${percent}%`;
-    
-    // Boss bosqichida rangni o'zgartirish
-    if (AppState.bossMode) {
-        UIElements.progressBarFill.classList.add('boss-progress');
-    } else {
-        UIElements.progressBarFill.classList.remove('boss-progress');
+function speakQuestion(idx) {
+    if('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); let text = currentTest[idx].q; let msg = new SpeechSynthesisUtterance(text); msg.lang = 'uz-UZ'; msg.rate = 0.9; window.speechSynthesis.speak(msg);
+    } else { alert("Brauzeringiz ovozli o'qishni qo'llab-quvvatlamaydi."); }
+}
+
+let comboCount = 0; let hackerStreak = 0; let lastAnswerTime = 0; let totalErrorsInTest = 0;
+
+function showComboBadge() {
+    const badge = document.getElementById('combo-badge'); badge.innerText = `COMBO x${comboCount} 🔥`; badge.classList.remove('hidden'); badge.style.animation = 'none';
+    void badge.offsetWidth; badge.style.animation = 'comboPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'; setTimeout(() => badge.classList.add('hidden'), 2000);
+}
+
+function showHackerBadge() {
+    const badge = document.getElementById('hacker-badge'); badge.classList.remove('hidden'); badge.style.animation = 'none';
+    void badge.offsetWidth; badge.style.animation = 'comboPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'; setTimeout(() => badge.classList.add('hidden'), 3000);
+}
+
+function updateDailyStreak() {
+    let today = new Date().toDateString(); let lastDate = localStorage.getItem('adham_last_date');
+    let streak = parseInt(localStorage.getItem('adham_streak')) || 0;
+    if (lastDate !== today) {
+        let yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+        if (lastDate === yesterday.toDateString()) streak++; else if (lastDate) streak = 1; else streak = 1;
+        localStorage.setItem('adham_last_date', today); localStorage.setItem('adham_streak', streak);
     }
+    document.getElementById('streak-count').innerText = streak;
 }
 
-// Streak-ni yangilash
-function updateStreakUI() {
-    UIElements.streakValue.textContent = AppState.streak;
-}
+// ==========================================
+// GLOBAL VARIABLES & LOAD
+// ==========================================
+let bank = []; let currentTest = []; let userAnswers = []; let currentIndex = 0; let currentUser = null; let timerInterval;
+let stats = JSON.parse(localStorage.getItem('adham_pro_stats')) || { learned: [], errors: [] };
+let pendingSubject = null; let pendingLevelQs = []; let testType = null; let testModeName = "";
+let diffTime = 900; let orderMode = 'random'; let isExamMode = false; let menuReturns = 0; let isAdminAdham = false;
 
-// Xabarnoma ko'rsatish
-function showNotification(message, type = 'default') {
-    const notification = document.createElement('div');
-    notification.className = `notification glass ${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.classList.add('show');
-        playSound(1200, 0.05, 'triangle'); // Xabarnoma tovushi
-    }, 50);
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 500);
-    }, 3000);
-}
+const subjectNames = { 'musiqa_nazariyasi': 'Musiqa Nazariyasi', 'cholgu_ijrochiligi': 'Cholg\'u Ijrochiligi', 'vokal_ijrochiligi': 'Vokal Ijrochiligi', 'metodika_repertuar': 'Metodika' };
 
-// Tovush chiqarish
-function playSound(frequency = 440, duration = 0.2, type = 'sine') {
-    if (!AppState.audioContext) return;
-    
-    const oscillator = AppState.audioContext.createOscillator();
-    const gainNode = AppState.audioContext.createGain();
-    
-    oscillator.type = type;
-    oscillator.frequency.setValueAtTime(frequency, AppState.audioContext.currentTime);
-    gainNode.gain.setValueAtTime(duration, AppState.audioContext.currentTime);
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(AppState.audioContext.destination);
-    
-    oscillator.start();
-    oscillator.stop(AppState.audioContext.currentTime + 0.1); // Juda qisqa tovush
-}
+function forceCloseAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
+function closeModal(e, id) { if(e.target.id === id) document.getElementById(id).style.display = 'none'; }
+function closeModalDirect(id) { document.getElementById(id).style.display = 'none'; }
 
-// Combo vizual effekti
-function showComboVisual() {
-    if (AppState.combo > 1) {
-        UIElements.comboVisual.textContent = `⭐ Combo ${AppState.combo}x ⭐`;
-        UIElements.comboVisual.classList.add('show');
-        setTimeout(() => UIElements.comboVisual.classList.remove('show'), 800);
+async function loadData() {
+    const files = ['musiqa_nazariyasi.json', 'cholgu_ijrochiligi.json', 'vokal_ijrochiligi.json', 'metodika_repertuar.json']; let globalId = 1;
+    for (const f of files) {
+        try {
+            const res = await fetch(f); const data = await res.json(); const subName = f.replace('.json', '');
+            data.forEach(q => {
+                let opts = q.options.filter(o => o !== null && o !== undefined && o.toString().trim() !== ''); let uniqueOpts = [...new Set(opts)];
+                let correctText = q.options[q.answer]; if(uniqueOpts.length === 3) uniqueOpts.push("Barcha javoblar to'g'ri"); bank.push({ id: globalId++, subject: subName, q: q.q, originalOpts: uniqueOpts, correctText: correctText });
+            });
+        } catch(e) { console.warn(f + " topilmadi"); }
     }
+    document.getElementById('max-learned-total').innerText = `/ ${bank.length}`;
+    updateDashboardStats(); updateDailyStreak();
 }
 
-// Timer
-function startTimer() {
-    clearInterval(AppState.timer);
-    AppState.timer = setInterval(() => {
-        AppState.timeSpent++;
+window.onload = () => {
+    loadData(); const isAuth = localStorage.getItem('pro_exam_auth');
+    if (isAuth === 'true') {
+        document.getElementById('student-name').value = localStorage.getItem('pro_exam_name') || ''; switchScreen('auth-screen', 'welcome-screen'); checkAdminBlock(); setInterval(checkAdminBlock, 45000);
+    }
+    const slider = document.getElementById('theme-slider');
+    if (localStorage.getItem('theme') === 'dark') { document.body.classList.replace('light-mode', 'dark-mode'); if(slider) slider.checked = true; }
+};
+
+function toggleTheme() { 
+    const slider = document.getElementById('theme-slider');
+    if(slider.checked) { document.body.classList.replace('light-mode', 'dark-mode'); localStorage.setItem('theme', 'dark'); }
+    else { document.body.classList.replace('dark-mode', 'light-mode'); localStorage.setItem('theme', 'light'); }
+}
+
+function switchScreen(hideId, showId) {
+    forceCloseAllModals(); document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.classList.add('hidden'); });
+    document.getElementById(showId).classList.remove('hidden'); document.getElementById(showId).classList.add('active');
+}
+
+function handleLogin() {
+    const name = document.getElementById('student-name').value.trim(); if(name.length < 2) return alert("Ismingizni kiriting!");
+    isAdminAdham = (name.toLowerCase() === 'adham' || name.toLowerCase() === 'admin'); // SET ADMIN MODE
+    if(isAdminAdham) alert("Assalomu alaykum, Muhtaram Creator (Admin)!");
+    currentUser = name; document.getElementById('display-name').innerText = name; if(audioCtx.state === 'suspended') audioCtx.resume();
+    document.getElementById('global-nav').classList.remove('hidden'); switchScreen('welcome-screen', 'dashboard-screen');
+}
+
+function goHome() { 
+    clearInterval(timerInterval); forceCloseAllModals(); document.getElementById('exit-test-btn').classList.add('hidden'); document.getElementById('exam-timer').classList.add('hidden');
+    document.body.classList.remove('boss-fight-mode'); if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    cheatWarnings = 0; comboCount = 0; hackerStreak = 0; totalErrorsInTest = 0;
+    document.getElementById('restart-mini-btn').classList.add('hidden');
+    switchScreen('test-screen', 'dashboard-screen'); updateDashboardStats(); 
+    menuReturns++; if(menuReturns % 3 === 0) { setTimeout(() => { document.getElementById('modal-donate').style.display = 'flex'; confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 }, colors: ['#FFD700', '#FFA500'] }); }, 500); }
+}
+function confirmExit() { if(confirm("Intellektual sessiyani to'xtatishni xohlaysizmi?")) goHome(); }
+function logout() { if(confirm("Tizimdan chiqishni xohlaysizmi?")) { localStorage.removeItem('pro_exam_auth'); location.reload(); } }
+
+function confirmRestart() { if(confirm("Intellektual sinovni boshidan boshlashni tasdiqlaysizmi?")) applySetup(); }
+
+function updateDashboardStats() {
+    stats.learned = [...new Set(stats.learned)]; stats.errors = [...new Set(stats.errors)]; localStorage.setItem('adham_pro_stats', JSON.stringify(stats));
+    document.getElementById('learned-count').innerText = stats.learned.length; document.getElementById('error-count').innerText = stats.errors.length; document.getElementById('error-work-btn').disabled = stats.errors.length === 0;
+}
+
+function openLevels(sub, title) {
+    forceCloseAllModals(); pendingSubject = sub; document.getElementById('modal-subject-title').innerText = title; const grid = document.getElementById('level-grid-box'); grid.innerHTML = '';
+    let subQs = bank.filter(q => q.subject === sub);
+    for(let i=0; i<10; i++) {
+        let start = i * 20; let end = start + 20; if(start >= subQs.length) break; let btn = document.createElement('button'); btn.className = 'lvl-btn';
+        let learned = subQs.slice(start, end).filter(q => stats.learned.includes(q.id)).length; btn.innerHTML = `<b>${i+1}-Bosqich</b> <span style="font-size:0.8rem; color:${learned === 20 ? 'var(--success)' : 'var(--text-sec)'}">${learned}/${end-start} ✅</span>`;
+        btn.onclick = () => { pendingLevelQs = subQs.slice(start, end); testType = 'level'; testModeName = `${title} (${i+1}-Bosqich)`; openSetup(); }; grid.appendChild(btn);
+    }
+    document.getElementById('modal-level').style.display = 'flex';
+}
+
+function openChapters() {
+    forceCloseAllModals(); const grid = document.getElementById('chapters-grid-box'); grid.innerHTML = ''; const cleanBank = [...bank].sort((a,b) => a.id - b.id); const chunks = Math.ceil(cleanBank.length / 20);
+    for(let i=0; i<chunks; i++) {
+        let start = i * 20; let end = Math.min(start + 20, cleanBank.length); let chunkQs = cleanBank.slice(start, end);
+        let learned = chunkQs.filter(q => stats.learned.includes(q.id)).length; let btn = document.createElement('button'); btn.className = 'lvl-btn';
+        btn.innerHTML = `Bob: ${start+1}-${end} <span style="font-size:0.8rem; color:${learned === (end-start) ? 'var(--success)' : 'var(--warning)'}">${learned}/${end - start} ✅</span>`;
+        btn.onclick = () => { pendingLevelQs = chunkQs; testType = 'chapter'; testModeName = `Bob (${start+1}-${end})`; openSetup(); }; grid.appendChild(btn);
+    }
+    document.getElementById('modal-chapters').style.display = 'flex';
+}
+
+function prepareTest(type, modeName) { forceCloseAllModals(); if (type === 'errors' && stats.errors.length === 0) return alert("Xatolar topilmadi!"); testType = type; testModeName = modeName; openSetup(); }
+function openSetup() { forceCloseAllModals(); document.getElementById('setup-screen').style.display = 'flex'; }
+function setDifficulty(level, btn) { document.querySelectorAll('.difficulty-control .seg-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); diffTime = (level==='easy')?1200:(level==='medium')?900:600; }
+function setOrder(mode, btn) { document.querySelectorAll('.order-control .seg-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); orderMode = mode; }
+
+function applySetup() {
+    forceCloseAllModals(); isExamMode = false; let pool = []; cheatWarnings = 0; comboCount = 0; hackerStreak = 0; totalErrorsInTest = 0; document.body.classList.remove('boss-fight-mode');
+    let cleanBank = [...bank].sort((a,b) => a.id - b.id); document.getElementById('restart-mini-btn').classList.add('hidden');
+    if(testType === 'level' || testType === 'chapter') pool = [...pendingLevelQs];
+    else if(testType === 'mix_800') pool = [...cleanBank].sort(() => Math.random() - 0.5).slice(0, 20);
+    else if(testType === 'errors') pool = cleanBank.filter(q => stats.errors.includes(q.id)).sort(() => Math.random()-0.5).slice(0, 20); 
+    else if(testType === 'sub_mix') pool = cleanBank.filter(q => q.subject === pendingSubject).sort(() => Math.random()-0.5).slice(0, 20);
+    if(orderMode === 'random') pool = pool.sort(() => Math.random() - 0.5); else pool = pool.sort((a,b) => a.id - b.id); currentTest = pool; startTestSession();
+}
+
+function startExamMode() {
+    forceCloseAllModals(); testType = 'exam'; testModeName = "IMTIHON MODE (Boss Fight)"; isExamMode = true; cheatWarnings = 0; comboCount = 0; hackerStreak = 0; totalErrorsInTest = 0; let examQs = [];
+    const subjects = ['musiqa_nazariyasi', 'cholgu_ijrochiligi', 'vokal_ijrochiligi', 'metodika_repertuar']; document.getElementById('restart-mini-btn').classList.add('hidden');
+    subjects.forEach(sub => { let sQs = bank.filter(q => q.subject === sub).sort(() => Math.random() - 0.5).slice(0, 15); examQs = examQs.concat(sQs); });
+    currentTest = examQs.sort(() => Math.random() - 0.5); diffTime = 3600; startTestSession();
+}
+
+function startTestSession() {
+    switchScreen('dashboard-screen', 'test-screen'); document.getElementById('exit-test-btn').classList.remove('hidden'); document.getElementById('exam-timer').classList.remove('hidden');
+    currentIdx = 0; currentIndex = 0; userAnswers = new Array(currentTest.length).fill(null);
+    currentTest = currentTest.map(q => { let shuffledOpts = [...q.originalOpts].sort(() => Math.random() - 0.5); return { ...q, options: shuffledOpts, answer: shuffledOpts.indexOf(q.correctText) }; });
+    clearInterval(timerInterval); startTimer(diffTime); renderMap(); renderAllQuestions(); lastAnswerTime = Date.now();
+}
+
+function startTimer(seconds) {
+    let time = seconds; timerInterval = setInterval(() => {
+        time--; let m = Math.floor(time / 60), s = time % 60; document.getElementById('exam-timer').innerText = `${m}:${s < 10 ? '0'+s : s}`; if (time <= 0) { clearInterval(timerInterval); showResult(userAnswers.filter(a => a?.isCorrect).length); }
     }, 1000);
 }
 
-// Vaqtni formatlash (min:sek)
-function formatTime(seconds) {
-    const min = Math.floor(seconds / 60);
-    const sek = seconds % 60;
-    return `${min < 10 ? '0' : ''}${min}:${sek < 10 ? '0' : ''}${sek}`;
+function renderMap() { document.getElementById('indicator-map').innerHTML = currentTest.map((_, i) => `<div class="dot" id="dot-${i}" onclick="goTo(${i})">${i+1}</div>`).join(''); }
+
+function renderAllQuestions() {
+    const area = document.getElementById('all-questions-area');
+    area.innerHTML = currentTest.map((q, idx) => `
+        <div class="q-block ${idx === currentIndex ? 'active-q' : 'blurred-q'}" id="q-block-${idx}">
+            <div class="q-meta">
+                <button class="tts-btn" onclick="speakQuestion(${idx})" title="Savolni o'qish">🔊</button>
+                <div><div class="spin-box" id="spin-${idx}">${idx+1}</div>Savol ${idx+1} / ${currentTest.length}</div>
+            </div>
+            <div class="q-text">${q.q}</div>
+            <div class="options-box" id="opts-${idx}">
+                ${q.options.map((opt, optIdx) => `<button class="option-btn ${(isAdminAdham && optIdx === q.answer) ? 'admin-hint' : ''}" id="btn-${idx}-${optIdx}" onclick="checkAns(${idx}, ${optIdx}, event)" ${userAnswers[idx] ? 'disabled' : ''}>${opt}</button>`).join('')}
+            </div>
+        </div>
+    `).join('');
+    updateMap(); scrollToActive(); runSpin(currentIndex);
 }
 
-// Tema almashtirish
-function toggleTheme() {
-    AppState.themeSwitchChecked = true;
-    if (document.body.classList.contains('dark-mode')) {
-        setTheme('light');
+function runSpin(idx) {
+    const spin = document.getElementById(`spin-${idx}`); if(!spin) return; let sc = 0; let si = setInterval(() => { spin.innerText = Math.floor(Math.random() * currentTest.length) + 1; if(++sc > 8) { clearInterval(si); spin.innerText = idx + 1; } }, 40);
+}
+
+function updateFocus() {
+    for(let i = 0; i < currentTest.length; i++) { const block = document.getElementById(`q-block-${i}`); if(block) { if(i === currentIndex) { block.classList.remove('blurred-q'); block.classList.add('active-q'); runSpin(i); } else { block.classList.remove('active-q'); block.classList.add('blurred-q'); } } }
+    const bossWarn = document.getElementById('boss-fight-warning'); if (isExamMode && currentIndex >= currentTest.length - 5) { document.body.classList.add('boss-fight-mode'); bossWarn.classList.remove('hidden'); } else { document.body.classList.remove('boss-fight-mode'); bossWarn.classList.add('hidden'); }
+    scrollToActive(); updateMap();
+}
+
+function scrollToActive() {
+    const activeBlock = document.getElementById(`q-block-${currentIndex}`); if (activeBlock) activeBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const activeDot = document.getElementById(`dot-${currentIndex}`); if(activeDot) activeDot.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+}
+
+function updateMap() {
+    let answered = userAnswers.filter(a => a !== null).length; document.getElementById('progress-fill').style.width = `${(answered / currentTest.length) * 100}%`;
+    currentTest.forEach((_, i) => { const dot = document.getElementById(`dot-${i}`); if(dot) { dot.className = 'dot'; if (i === currentIndex) dot.classList.add('active-dot'); if (userAnswers[i]) dot.classList.add(userAnswers[i].isCorrect ? 'correct' : 'wrong'); } });
+}
+
+function checkAns(qIdx, optIdx, event) {
+    if (qIdx !== currentIndex || userAnswers[qIdx]) return; let now = Date.now();
+    if (now - lastAnswerTime < 1500) { hackerStreak++; if (hackerStreak === 10) showHackerBadge(); } else hackerStreak = 0; lastAnswerTime = now;
+    const isCorrect = optIdx === currentTest[qIdx].answer; userAnswers[qIdx] = { selected: optIdx, isCorrect };
+    const qId = currentTest[qIdx].id; const clickedBtn = document.getElementById(`btn-${qIdx}-${optIdx}`);
+    if (isCorrect) {
+        if (!stats.learned.includes(qId)) stats.learned.push(qId); stats.errors = stats.errors.filter(id => id !== qId);clickedBtn.classList.add('magic-correct'); playFeedback('correct'); createParticles(event);
+        comboCount++; if (comboCount >= 3) showComboBadge(); document.body.classList.add('ambient-success'); setTimeout(() => document.body.classList.remove('ambient-success'), 600);
     } else {
-        setTheme('dark');
+        if (!stats.errors.includes(qId)) stats.errors.push(qId); clickedBtn.classList.add('magic-wrong'); playFeedback('wrong'); comboCount = 0; hackerStreak = 0; totalErrorsInTest++;
+        document.body.classList.add('ambient-error'); setTimeout(() => document.body.classList.remove('ambient-error'), 600);
+        if (totalErrorsInTest === 1) document.getElementById('restart-mini-btn').classList.remove('hidden');
     }
+    localStorage.setItem('adham_pro_stats', JSON.stringify(stats)); const options = document.getElementById(`opts-${qIdx}`).getElementsByTagName('button');
+    for(let btn of options) btn.disabled = true; if (userAnswers.filter(a => a !== null).length === currentTest.length) document.getElementById('finish-btn').classList.remove('hidden');
+    setTimeout(() => { let next = userAnswers.findIndex(ans => ans === null); if (next !== -1) { currentIndex = next; updateFocus(); } }, 800);
 }
 
-// Temani o'rnatish
-function setTheme(theme) {
-    if (theme === 'dark') {
-        document.body.classList.add('dark-mode');
-        UIElements.themeSwitch.checked = true;
-        localStorage.setItem('theme', 'dark');
-    } else {
-        document.body.classList.remove('dark-mode');
-        UIElements.themeSwitch.checked = false;
-        localStorage.setItem('theme', 'light');
-    }
+function move(step) { let n = currentIndex + step; if (n >= 0 && n < currentTest.length) { currentIndex = n; updateFocus(); } }
+function goTo(i) { currentIndex = i; updateFocus(); }
+
+function finishExam() {
+    clearInterval(timerInterval); document.body.classList.remove('boss-fight-mode'); document.getElementById('boss-fight-warning').classList.add('hidden'); document.getElementById('restart-mini-btn').classList.add('hidden'); 
+    let correctCount = userAnswers.filter(a => a?.isCorrect).length;
+    if(!isExamMode && correctCount < currentTest.length) {
+        alert(`Akademik Natija: ${correctCount}/${currentTest.length}. Qoidaga ko'ra, 100% o'zlashtirmaguningizcha ushbu savollar aralashtirilib qayta beriladi.`);
+        currentTest = shuffleArray(currentTest).map(q => {
+            let correctText = q.options[q.answer]; let shuffledOpts = shuffleArray([...q.options]);
+            return { ...q, options: shuffledOpts, answer: shuffledOpts.indexOf(correctText) };
+        });
+        userAnswers = new Array(currentTest.length).fill(null); currentIndex = 0; startTimer(diffTime); renderAllQuestions(); document.getElementById('finish-btn').classList.add('hidden');
+    } else showResult(correctCount);
+}
+function shuffleArray(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+function showResult(correctCount) {
+    let percent = Math.round((correctCount / currentTest.length) * 100); document.getElementById('result-percent').innerText = `${percent}%`; let msg = "", color = "";
+    if(percent >= 90) { msg = "Muhtasham natija! Siz haqiqiy mutaxassissiz. 🏆"; color = "var(--success)"; confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } }); document.getElementById('cert-btn').style.display = 'inline-block';} 
+    else if(percent >= 70) { msg = "Yaxshi ko'rsatkich, lekin Akademik cho'qqiga oz qoldi. 👍"; color = "var(--primary)"; document.getElementById('cert-btn').style.display = 'none';} 
+    else if(percent >= 50) { msg = "Qoniqarli, ammo intellektual salohiyatingiz bundan baland! 📚"; color = "var(--warning)"; document.getElementById('cert-btn').style.display = 'none';} 
+    else { msg = "Chuqur tahlil qiling va qayta urinib ko'ring! ⚠️"; color = "var(--error)"; document.getElementById('cert-btn').style.display = 'none';}
+    document.getElementById('result-msg').innerText = msg; document.getElementById('result-donut').style.borderColor = color; document.getElementById('result-donut').style.boxShadow = `0 0 30px ${color}`; document.getElementById('result-percent').style.color = color;
+    generateRentgenAnalysis(); forceCloseAllModals(); document.getElementById('modal-result').style.display = 'flex';
 }
 
-// Qurilma temasini tekshirish
-function checkDeviceTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (prefersDark && savedTheme !== 'light')) {
-        setTheme('dark');
-    } else {
-        setTheme('light');
-    }
-}
-
-// Sahifa yuklanganda ishga tushirish
-document.addEventListener('DOMContentLoaded', initApp);
+function generateRentgenAnalysis() {
+    const barsContainer = document.getElementById('rentgen-bars'); barsContainer.innerHTML = ''; let subjectsInTest = [...new Set(currentTest.map(q => q.subject))];
+    subjectsInTest.forEach(sub => {
+        let subQs = currentTest.filter(q => q.subject === sub);
+        let subCorrect = subQs.filter((q) => { let index = currentTest.indexOf(q); return userAnswers[index] && userAnswers[index].isCorrect; }).length;
+        let subPercent = Math.round((subCorrect / subQs.length) * 100); let color = subPercent >= 90 ? 'var(--success)' : subPercent >= 60 ? 'var(--warning)' : 'var(--error)';
+        let msg = subPercent >= 90 ? '(Ajoyib!)' : subPercent >= 60 ? '(Yaxshi)' : '(Kuchsiz)'; let subNameFormatted = subjectNames[sub] || sub;
+        barsContainer.innerHTML += `
+            <div class="rentgen-item">
