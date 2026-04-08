@@ -2,12 +2,261 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRO EXAM - Chirchiq Davlat Pedagogika Universiteti</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PRO EXAM Ultimate - Premium Edition</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0A84FF">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div id="root"></div>
-    <script src="script.js" defer></script>
+<body class="light-mode" id="main-body" oncontextmenu="return false;">
+
+    <div id="auth-screen" class="screen active">
+        <div class="hero-overlay">
+            <div class="hero-card glass-effect slide-up">
+                <img src="logo.jpg" alt="Logo" class="main-logo" onerror="this.style.display='none'">
+                <div class="hero-badge" style="background: var(--warning);">Yopiq Tizim (Premium)</div>
+                <h1 class="main-title">Tizimga kirish</h1>
+                
+                <div class="login-form">
+                    <input type="text" id="auth-login" class="premium-input" placeholder="Shaxsiy Login" autocomplete="off">
+                    <input type="password" id="auth-password" class="premium-input" placeholder="Maxfiy Parol" autocomplete="off">
+                    <input type="text" id="auth-keygen" class="premium-input" placeholder="Keygen (Litsenziya kaliti)" autocomplete="off">
+                    <button class="btn-start pulse" id="btn-auth" onclick="authenticateUser()">Kirishni Tasdiqlash 🔒</button>
+                    <p id="auth-error" class="text-error hidden" style="font-size: 0.9rem; margin-top: 10px; font-weight: bold;"></p>
+                </div>
+
+                <div class="rules-box payment-box">
+                    <p style="text-align:center; font-weight:900; color:var(--error); margin-bottom:10px;">⚠️ Qat'iy Xavfsizlik Qoidalari</p>
+                    <p style="font-size:0.85rem; margin-bottom:10px; text-align: left;">• Berilgan Keygen <b>faqat 1 ta qurilma</b> uchun faol.<br>• Intellektual sinov vaqtida boshqa oynaga o'tish yoki nusxalash (Ctrl+C) taqiqlanadi. Qoida buzulsa sessiya avtomatik yopiladi!</p>
+                    
+                    <hr style="border:0; border-top:1px dashed var(--primary); margin:15px 0; opacity: 0.3;">
+                    
+                    <p style="font-size:0.85rem; margin-bottom:10px; text-align:center;"><b>🔑 Litsenziya kaliti (Keygen) olish:</b><br>To'lov summasi: <b>25 000 so'm</b>.<br>To'lovni amalga oshiring va kvitansiyani adminga yuboring.</p>
+                    
+                    <div class="card-copy" onclick="copyCard()" title="Nusxalash uchun ustiga bosing">
+                        Humo: <b id="card-num">9860350141282409</b> <span style="font-size: 1.2rem;">📋</span>
+                    </div>
+                    
+                    <div style="text-align:center; margin-top:20px; display:flex; align-items:center; justify-content:center; gap: 10px;">
+                        <span style="font-size:0.95rem; font-weight:700; color: var(--text);">Kvitansiya yuborish ➡️</span>
+                        <a href="https://t.me/atamuratovs" target="_blank" class="tg-link" title="Adminga yozish">
+                            <img src="tg.png" alt="Telegram" onerror="this.style.display='none'">
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <footer class="app-footer-welcome">© 2026 Adham's Development. Barcha huquqlar himoyalangan.</footer>
+        </div>
+    </div>
+
+    <div id="welcome-screen" class="screen hidden">
+        <div class="hero-overlay">
+            <div class="hero-card glass-effect slide-up">
+                <img src="logo.jpg" alt="Logo" class="main-logo" onerror="this.style.display='none'">
+                <div class="hero-badge">Akademik Platforma</div>
+                <h1 class="main-title">Xush kelibsiz!</h1>
+                <p class="hero-subtitle">
+                    Intellektual tayyorgarlikning yangi bosqichi. Tizim sizning zaif nuqtalaringizni chuqur tahlil qilib, mukammal natijaga yo'naltiradi.<br><br>
+                    <b>Bo'lajak mutaxassislar uchun maxsus.</b>
+                </p>
+                <div class="rules-box">
+                    <p>🔥 <b>Davomiylik (Streak):</b> Har kuni faol bo'ling va intellektual olovingizni saqlang!</p>
+                    <p>✅ <b>Rentgen tahlili:</b> Natijalaringiz fanlar kesimida chuqur tahlil qilinadi.</p>
+                </div>
+                
+                <div class="login-form">
+                    <input type="text" id="student-name" class="premium-input" placeholder="Ism familiyangizni kiriting..." autocomplete="off">
+                    <button class="btn-start pulse" onclick="handleLogin()">Sessiyani Boshlash 🚀</button>
+                </div>
+
+                <div class="social-links">
+                    <a href="https://t.me/atamuratovs" target="_blank" class="social-btn"><img src="tg.png" alt="TG" onerror="this.style.display='none'"></a>
+                    <a href="https://www.instagram.com/strovln" target="_blank" class="social-btn"><img src="insta.png" alt="IG" onerror="this.style.display='none'"></a>
+                </div>
+            </div>
+            <footer class="app-footer-welcome">© 2026 Adham's Development. Barcha huquqlar himoyalangan.</footer>
+        </div>
+    </div>
+
+    <nav class="global-nav hidden" id="global-nav">
+        <div class="logo-area" onclick="logout()" title="Bosh sahifa / Tark etish">
+            <img src="logo.jpg" alt="Logo" class="nav-logo-mini" onerror="this.style.display='none'">
+            <span class="logo-text">PRO EXAM <span class="badge">v8.0</span></span>
+        </div>
+        <div class="nav-right">
+            <button id="install-app-btn" class="install-btn hidden">📲 O'rnatish</button>
+            <div class="streak-box" title="Uzluksiz faollik kunlari">
+                🔥 <span id="streak-count">0</span>
+            </div>
+            <button id="exit-test-btn" class="exit-mini hidden" onclick="confirmExit()">🚪 Tark etish</button>
+            <div id="exam-timer" class="timer-badge hidden">00:00</div>
+            
+            <label class="theme-switch" title="Kun/Tun rejimi">
+                <input type="checkbox" id="theme-slider" onchange="toggleTheme()">
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </nav>
+
+    <div id="dashboard-screen" class="screen hidden">
+        <div class="container main-content">
+            <header class="dash-header slide-up">
+                <h2>Hurmatli <span id="display-name" class="text-primary">Talaba</span>!</h2>
+                <div class="stats-row">
+                    <div class="stat-card">O'zlashtirilgan: <b id="learned-count" class="text-success">0</b> <span class="max-total" id="max-learned-total">/ 0</span></div>
+                    <div class="stat-card">Xatolar: <b id="error-count" class="text-error">0</b></div>
+                </div>
+                <div class="progress-info mt-10" style="font-size: 0.85rem; color: var(--text-sec); text-align: center; margin-top: 15px;">
+                    🎯 Sizning maqsadingiz barcha bilimlarni yashil zonaga olib chiqish va Oltin Sertifikatga ega bo'lish!
+                </div>
+            </header>
+
+            <div class="category-grid slide-up">
+                <button class="cat-btn" onclick="openLevels('musiqa_nazariyasi', 'Musiqa nazariyasi')">🎼 Musiqa nazariyasi</button>
+                <button class="cat-btn" onclick="openLevels('cholgu_ijrochiligi', 'Cholg\'u ijrochiligi')">🎻 Cholg'u ijrochiligi</button>
+                <button class="cat-btn" onclick="openLevels('vokal_ijrochiligi', 'Vokal ijrochiligi')">🎤 Vokal ijrochiligi</button>
+                <button class="cat-btn" onclick="openLevels('metodika_repertuar', 'Metodika')">📚 Metodika</button>
+                
+                <button class="cat-btn btn-special" onclick="prepareTest('mix_800', 'Smart Mix (Aralash)')">🎲 Smart Mix (Aralash)</button>
+                <button class="cat-btn btn-outline" onclick="openChapters()">📑 Tasniflangan Boblar</button>
+                <button id="error-work-btn" class="cat-btn btn-error" onclick="prepareTest('errors', 'Xatolar Tahlili')" disabled>🛠 Xatolar Ustida Ishlash</button>
+                <button class="cat-btn btn-exam pulse" onclick="startExamMode()">🎓 IMTIHON MODE (Boss Fight)</button>
+            </div>
+        </div>
+        <footer class="app-footer">© 2026 Adham's Development. Barcha huquqlar himoyalangan.</footer>
+    </div>
+
+    <div id="modal-level" class="modal-overlay" onclick="closeModal(event, 'modal-level')">
+        <div class="modal-content">
+            <h2 id="modal-subject-title" style="margin-bottom: 15px; font-weight:800; text-align:center;">Fan</h2>
+            <div class="level-grid" id="level-grid-box"></div>
+            <button class="btn-start" style="margin-top:15px; background:var(--bg); border:2px solid var(--primary); color:var(--primary);" onclick="prepareTest('sub_mix', 'Fandan Aralash Test')">🎲 Fandan Aralash Test</button>
+        </div>
+    </div>
+
+    <div id="modal-chapters" class="modal-overlay" onclick="closeModal(event, 'modal-chapters')">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 15px; font-weight:800; text-align:center;">Barcha Boblar</h2>
+            <p style="text-align:center; color:var(--text-sec); font-size:0.9rem; margin-bottom:15px;">Dinamik axborot bazasi</p>
+            <div class="level-grid" id="chapters-grid-box"></div>
+        </div>
+    </div>
+
+    <div id="setup-screen" class="modal-overlay" onclick="closeModal(event, 'setup-screen')">
+        <div class="modal-content">
+            <h2 style="text-align: center; margin-bottom: 25px; font-size: 1.5rem;">⚙️ Parametrlarni Sozlash</h2>
+            <div class="setup-group">
+                <label>Qiyinlik darajasi (Vaqt):</label>
+                <div class="segmented-control difficulty-control">
+                    <button class="seg-btn diff-easy active" onclick="setDifficulty('easy', this)">Standart</button>
+                    <button class="seg-btn diff-medium" onclick="setDifficulty('medium', this)">O'rtacha</button>
+                    <button class="seg-btn diff-hard" onclick="setDifficulty('hard', this)">Akademik</button>
+                </div>
+            </div>
+            <div class="setup-group">
+                <label>Savollar joylashuvi:</label>
+                <div class="segmented-control order-control flex-col">
+                    <button class="seg-btn order-opt order-random active" onclick="setOrder('random', this)">🎲 Aqlli aralashtirish</button>
+                    <button class="seg-btn order-opt order-seq" onclick="setOrder('seq', this)">⬇️ Xronologik ketma-ketlik</button>
+                </div>
+            </div>
+            <div class="setup-actions" style="display:flex; gap:10px;">
+                <button class="btn-cancel" onclick="closeModalDirect('setup-screen')">Bekor qilish</button>
+                <button class="btn-start-test" onclick="applySetup()">Boshlash 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-result" class="modal-overlay">
+        <div class="modal-content text-center">
+            <h2 style="font-weight:900;">Chuqur Tahlil Natijasi</h2>
+            <div class="donut" id="result-donut"><span id="result-percent">0%</span></div>
+            <p class="res-msg" id="result-msg">Xabar</p>
+            
+            <div id="rentgen-container" class="rentgen-container">
+                <h4 style="margin-bottom: 15px; color: var(--text); text-align: center;">Fanlar bo'yicha Rentgen Tahlili</h4>
+                <div id="rentgen-bars"></div>
+            </div>
+
+            <button class="btn-start" id="cert-btn" style="display:none; background: linear-gradient(135deg, #FFD700, #FFA500); color: black; margin-bottom: 10px; font-weight:800;" onclick="showCertificate()">Premium Sertifikatni Olish 🏆</button>
+            <button class="btn-start" style="background:var(--bg); border:2px solid var(--primary); color:var(--primary);" onclick="goHome()">Asosiy menyuga qaytish</button>
+        </div>
+    </div>
+
+    <div id="modal-donate" class="modal-overlay">
+        <div class="modal-content text-center" style="border: 2px solid var(--warning);">
+            <div style="font-size: 3rem; margin-bottom: 10px;">☕</div>
+            <h2 style="font-weight:800; margin-bottom: 15px; color: var(--text);">Muallifdan Samimiy Murojaat</h2>
+            <p style="font-size: 0.95rem; color: var(--text-sec); line-height: 1.6; margin-bottom: 20px;">
+                Ushbu platforma talabalar yakuniy imtihonlarga qiynalmasdan tayyorlanishi uchun yuzlab soatlik uyqusiz tunlar va qora mehnat evaziga yaratildi. Agar platforma sizga foyda keltirgan bo'lsa va dasturchini qo'shimcha qo'llab-quvvatlashni xohlasangiz, bitta qahva puli bilan minnatdorchilik bildirishingiz mumkin!
+            </p>
+            <div class="card-copy" onclick="copyCard()" title="Nusxalash uchun bosing" style="margin-bottom: 15px;">
+                Humo: <b id="card-num-donate">9860350141282409</b> <span style="font-size: 1.2rem;">📋</span>
+            </div>
+            <a href="https://t.me/atamuratovs" target="_blank" style="display:block; margin-bottom: 15px; color: var(--primary); font-weight: bold; text-decoration: none;">Adminga yozish (Telegram) ↗️</a>
+            <button class="btn-cancel" style="width: 100%;" onclick="closeModalDirect('modal-donate')">Keyinroq</button>
+        </div>
+    </div>
+
+    <div id="modal-cert" class="modal-overlay" style="z-index: 3000;">
+        <div class="modal-content cert-wrapper" style="max-width: 850px; background: transparent; border: none; box-shadow: none; padding: 0;">
+            <div id="printable-cert" class="cert-container">
+                <div class="cert-spacer"></div>
+                
+                <h2 class="cert-name" id="cert-student-name">TALABA ISMI</h2>
+                <p class="cert-desc">ga intellektual sinovda yuqori darajadagi bilimini namoyon etgani uchun taqdim etiladi.</p>
+                
+                <div class="cert-stats">
+                    <p><b>Rejim:</b> <span id="cert-mode-name">Mode</span></p>
+                    <p><b>Natija:</b> <span id="cert-score">100%</span></p>
+                    <p><b>Umumiy o'zlashtirish:</b> <span id="cert-global-stats">0/785</span></p>
+                    <p><b>Sana:</b> <span id="cert-date">Date</span></p>
+                </div>
+
+                <img src="imzo.png" alt="A. Atamuratov Imzosi" class="cert-imzo-img">
+            </div>
+            
+            <div class="cert-modal-actions no-print">
+                <button class="btn-start" style="background: linear-gradient(135deg, #28A745, #30D158); max-width: 250px;" onclick="window.print()">Yuklab olish (PDF/Print) 📥</button>
+                <button class="btn-cancel" style="max-width: 200px; background: rgba(0,0,0,0.5); color: #fff;" onclick="goHome()">Chiqish</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="test-screen" class="screen hidden">
+        <div class="progress-bar-container"><div id="progress-fill"></div></div>
+        
+        <div id="combo-badge" class="combo-badge hidden">COMBO x3 🔥</div>
+        <div id="hacker-badge" class="combo-badge hidden" style="background: linear-gradient(135deg, #00C9FF, #92FE9D); color: #000;">HACKER DARAJASI 💻!</div>
+        <div id="boss-fight-warning" class="boss-warning hidden">⚠️ BOSS FIGHT (OXIRGI 5 TA) ⚠️</div>
+
+        <button id="restart-mini-btn" class="restart-mini-btn hidden" onclick="confirmRestart()" title="Boshidan boshlash">🔄</button>
+
+        <div class="container test-layout">
+            <div class="map-container">
+                <div class="map-title only-pc">Savollar Navigatsiyasi</div>
+                <div id="indicator-map" class="mini-map"></div>
+            </div>
+
+            <div class="question-container">
+                <div id="question-list-wrapper" class="q-list-wrapper">
+                    <div id="all-questions-area"></div>
+                    <div class="scroll-pad"></div> 
+                </div>
+                
+                <div class="nav-controls">
+                    <button class="nav-btn" onclick="move(-1)">⬅️ Oldingi</button>
+                    <button id="finish-btn" class="finish-btn hidden" onclick="finishExam()">Sessiyani Yakunlash ✔️</button>
+                    <button class="nav-btn" onclick="move(1)">Keyingi ➡️</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
